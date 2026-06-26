@@ -1,0 +1,102 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/AuthProvider";
+import { PLAN_LIST } from "@/lib/plans";
+
+export default function AccountPage() {
+  const { user, loading, getToken, logout } = useAuth();
+  const router = useRouter();
+  const [me, setMe] = useState<any>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
+  useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
+
+  async function load() {
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/me", { headers: { Authorization: `Bearer ${t}` } });
+      const j = await r.json();
+      if (j.ok) setMe(j); else setErr(j.error);
+    } catch (e: any) { setErr(e.message); }
+  }
+
+  if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
+
+  const used = me?.used ?? 0, quota = me?.plan?.quota ?? 0;
+  const pct = quota ? Math.min(100, Math.round((used / quota) * 100)) : 0;
+
+  return (
+    <main style={{ minHeight: "100vh" }}>
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #1c2238" }}>
+        <a href="/app" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18 }}>
+          <span style={{ background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</span>
+        </a>
+        <div style={{ display: "flex", gap: 10 }}>
+          <a href="/app" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>← Generator</a>
+          <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
+        </div>
+      </header>
+
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: "24px 18px 60px" }}>
+        <h1 style={{ fontSize: 24, marginBottom: 4 }}>Account</h1>
+        <div style={{ color: "#8b97b3", fontSize: 13, marginBottom: 20 }}>{user.email}</div>
+        {err && <div style={{ color: "#ff6b6b", marginBottom: 16 }}>{err}</div>}
+
+        {/* Plan + usage */}
+        <div className="card" style={{ padding: 18, marginBottom: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <div><div style={{ fontSize: 12, color: "#8b97b3" }}>Current plan</div><div style={{ fontSize: 20, fontWeight: 800 }}>{me?.plan?.name || "—"}</div></div>
+            <div style={{ textAlign: "right" }}><div style={{ fontSize: 12, color: "#8b97b3" }}>This month</div><div style={{ fontSize: 20, fontWeight: 800 }}>{used} / {quota}</div></div>
+          </div>
+          <div style={{ height: 8, background: "#1a2138", borderRadius: 6, overflow: "hidden", marginTop: 12 }}>
+            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#7c5cff,#4f8cff)" }} />
+          </div>
+          <div style={{ fontSize: 12, color: "#8b97b3", marginTop: 6 }}>{me?.remaining ?? 0} generations remaining</div>
+        </div>
+
+        {/* Upgrade */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Plans</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
+          {PLAN_LIST.map(p => {
+            const current = me?.plan?.id === p.id;
+            return (
+              <div key={p.id} className="card" style={{ padding: 16, border: current ? "1.5px solid #34d399" : undefined }}>
+                <div style={{ fontSize: 14, fontWeight: 800 }}>{p.name}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, margin: "4px 0" }}>${p.priceUsd}<span style={{ fontSize: 12, color: "#8b97b3" }}>{p.priceUsd ? "/mo" : ""}</span></div>
+                <div style={{ fontSize: 12, color: "#9aa6c2", marginBottom: 10 }}>{p.quota.toLocaleString()} gens · {p.variants} variations · {p.images} img</div>
+                {current ? (
+                  <div style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: "#34d399" }}>✓ Current</div>
+                ) : (
+                  <button className="btn" disabled style={{ width: "100%", fontSize: 12.5, opacity: 0.7 }} title="Stripe billing coming soon">
+                    {p.priceUsd ? "Upgrade (soon)" : "Free"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 12, color: "#6b7690", marginBottom: 28 }}>💳 Stripe billing is being wired up — upgrades go live shortly.</div>
+
+        {/* History */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Recent generations</div>
+        {(!me?.history || me.history.length === 0) ? (
+          <div className="card" style={{ padding: 20, color: "#8b97b3", fontSize: 13 }}>No generations yet — <a href="/app" style={{ color: "#7c5cff" }}>create your first ad set</a>.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {me.history.map((h: any) => (
+              <div key={h.id} className="card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", gap: 10 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.brief?.product || "—"}</div>
+                  <div style={{ fontSize: 11.5, color: "#8b97b3" }}>{h.brief?.platform} · {h.variations?.length || 0} variations · {h.imageCount || 0} images</div>
+                </div>
+                <div style={{ fontSize: 11, color: "#6b7690", flexShrink: 0 }}>{h.createdAt ? new Date(h.createdAt).toLocaleDateString() : ""}</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

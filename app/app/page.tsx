@@ -1,0 +1,131 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/AuthProvider";
+
+const PLATFORMS = ["Instagram", "Facebook", "TikTok", "LinkedIn", "Google", "X (Twitter)", "Pinterest", "YouTube"];
+const TONES = ["Bold & punchy", "Premium & polished", "Friendly & casual", "Urgent / scarcity", "Playful & fun", "Professional"];
+
+interface Variation { headline: string; primaryText: string; caption: string; hashtags: string[]; cta: string; }
+interface AdSet { variations: Variation[]; creativeBrief: string; images: string[]; }
+
+export default function GeneratorPage() {
+  const { user, loading, logout, getToken } = useAuth();
+  const router = useRouter();
+  const [form, setForm] = useState({ brand: "", product: "", goal: "Drive conversions", platform: "Instagram", tone: "Bold & punchy", audience: "" });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [result, setResult] = useState<AdSet | null>(null);
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [planName, setPlanName] = useState("");
+
+  useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
+  useEffect(() => { if (user) refreshMe(); }, [user]); // eslint-disable-line
+
+  async function refreshMe() {
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/me", { headers: { Authorization: `Bearer ${t}` } });
+      const j = await r.json();
+      if (j.ok) { setRemaining(j.remaining); setPlanName(j.plan?.name || ""); }
+    } catch { /* */ }
+  }
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  async function generate() {
+    if (!form.product.trim()) { setErr("Describe your product or offer."); return; }
+    setBusy(true); setErr(null); setResult(null);
+    try {
+      const t = await getToken();
+      const r = await fetch("/api/generate", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` }, body: JSON.stringify(form) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Generation failed");
+      setResult(j.adSet); setRemaining(j.remaining);
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusy(false); }
+  }
+
+  if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
+
+  const label: React.CSSProperties = { fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 5, display: "block" };
+
+  return (
+    <main style={{ minHeight: "100vh" }}>
+      {/* Header */}
+      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #1c2238", flexWrap: "wrap", gap: 10 }}>
+        <a href="/app" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18 }}>
+          <span style={{ background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</span>
+        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
+          {remaining !== null && <span style={{ color: "#9aa6c2" }}><b style={{ color: "#e7ecf5" }}>{remaining}</b> left · {planName}</span>}
+          <a href="/account" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Account</a>
+          <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
+        </div>
+      </header>
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "22px 18px 60px", display: "grid", gridTemplateColumns: "380px 1fr", gap: 22, alignItems: "start" }}>
+        {/* Brief form */}
+        <div className="card" style={{ padding: 18 }}>
+          <h2 style={{ fontSize: 16, margin: "0 0 14px" }}>Campaign brief</h2>
+          <div style={{ marginBottom: 12 }}><label style={label}>Brand</label><input className="in" value={form.brand} onChange={e => set("brand", e.target.value)} placeholder="e.g. Lumen Skincare" /></div>
+          <div style={{ marginBottom: 12 }}><label style={label}>Product / offer *</label><textarea className="in" rows={3} value={form.product} onChange={e => set("product", e.target.value)} placeholder="What you're advertising — the product, offer, key benefits…" style={{ resize: "vertical" }} /></div>
+          <div style={{ marginBottom: 12 }}><label style={label}>Audience</label><input className="in" value={form.audience} onChange={e => set("audience", e.target.value)} placeholder="e.g. women 25-40 into clean beauty" /></div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            <div><label style={label}>Platform</label><select className="in" value={form.platform} onChange={e => set("platform", e.target.value)}>{PLATFORMS.map(p => <option key={p}>{p}</option>)}</select></div>
+            <div><label style={label}>Tone</label><select className="in" value={form.tone} onChange={e => set("tone", e.target.value)}>{TONES.map(t => <option key={t}>{t}</option>)}</select></div>
+          </div>
+          <div style={{ marginBottom: 14 }}><label style={label}>Goal</label><input className="in" value={form.goal} onChange={e => set("goal", e.target.value)} placeholder="e.g. drive signups, sell the product" /></div>
+          {err && <div style={{ color: "#ff6b6b", fontSize: 12.5, marginBottom: 10 }}>{err}</div>}
+          <button className="btn" onClick={generate} disabled={busy || remaining === 0} style={{ width: "100%" }}>
+            {busy ? "⚡ Generating…" : remaining === 0 ? "No generations left — upgrade" : "⚡ Generate ad set"}
+          </button>
+          {remaining === 0 && <a href="/account" style={{ display: "block", textAlign: "center", marginTop: 10, color: "#7c5cff", fontSize: 13 }}>Upgrade your plan →</a>}
+        </div>
+
+        {/* Results */}
+        <div>
+          {!result && !busy && (
+            <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>✨</div>
+              <div style={{ fontSize: 15, color: "#c7d0e6", fontWeight: 700 }}>Your ad creative appears here</div>
+              <div style={{ fontSize: 13, marginTop: 6 }}>Fill the brief and hit Generate — you'll get copy variations, captions, hashtags, and AI images.</div>
+            </div>
+          )}
+          {busy && <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>⚡ Crafting your ad set… copy + images can take ~20–40s.</div>}
+          {result && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {result.images?.length > 0 && (
+                <div className="card" style={{ padding: 16 }}>
+                  <div style={{ fontSize: 12, color: "#8b97b3", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.6 }}>AI images</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 12 }}>
+                    {result.images.map((src, i) => (
+                      <div key={i} style={{ position: "relative" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt={`Ad ${i + 1}`} style={{ width: "100%", borderRadius: 10, border: "1px solid #232a3e" }} />
+                        <a href={src} download={`adspark-${i + 1}.png`} className="btn" style={{ position: "absolute", bottom: 8, right: 8, padding: "6px 10px", fontSize: 12 }}>⬇</a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {result.creativeBrief && <div className="card" style={{ padding: 14, fontSize: 13, color: "#c7d0e6" }}><b style={{ color: "#9aa6c2" }}>Creative brief:</b> {result.creativeBrief}</div>}
+              {result.variations.map((v, i) => (
+                <div key={i} className="card" style={{ padding: 16 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <span style={{ fontSize: 11, color: "#7c5cff", fontWeight: 800, letterSpacing: 0.6 }}>VARIATION {i + 1}</span>
+                    <button onClick={() => navigator.clipboard?.writeText(`${v.headline}\n\n${v.primaryText}\n\n${v.caption}\n\n${v.hashtags.map(h => h.startsWith("#") ? h : "#" + h).join(" ")}\n\n${v.cta}`)} className="btn-ghost btn" style={{ padding: "5px 10px", fontSize: 12 }}>Copy all</button>
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 8 }}>{v.headline}</div>
+                  <div style={{ fontSize: 13.5, color: "#cdd6ea", lineHeight: 1.55, marginBottom: 10, whiteSpace: "pre-wrap" }}>{v.primaryText}</div>
+                  <div style={{ fontSize: 13, color: "#aeb9d4", lineHeight: 1.5, marginBottom: 8, whiteSpace: "pre-wrap" }}>{v.caption}</div>
+                  <div style={{ fontSize: 12.5, color: "#7c5cff", marginBottom: 8 }}>{v.hashtags.map(h => (h.startsWith("#") ? h : "#" + h)).join(" ")}</div>
+                  <div style={{ display: "inline-block", fontSize: 12, fontWeight: 700, background: "#7c5cff22", border: "1px solid #7c5cff55", color: "#cbbcff", borderRadius: 8, padding: "4px 10px" }}>CTA: {v.cta}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
