@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { requireAdmin } from "@/lib/admin";
 import { COL } from "@/lib/collections";
-import { metaReady, metaCreateCampaign } from "@/lib/platforms/meta";
+import { platformReady, createCampaign } from "@/lib/platforms";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -43,24 +43,23 @@ export async function POST(req: NextRequest) {
 
     const now = Date.now();
     let externalId: string | null = null;
+    let externalAccountId: string | null = null;
     let status = "draft";
     let warn: string | undefined;
 
-    if (goLive && platform === "meta") {
-      const adAccount = client.adAccounts?.meta || process.env.META_AD_ACCOUNT_ID || "";
-      if (!metaReady() || !adAccount) {
-        warn = "Saved as draft — Meta isn't configured or this client has no Meta ad account.";
+    if (goLive) {
+      if (!platformReady(platform)) {
+        warn = `Saved as draft — ${platform} isn't configured (add its API keys to go live).`;
       } else {
+        const adAccount = client.adAccounts?.[platform] || (platform === "meta" ? process.env.META_AD_ACCOUNT_ID || "" : "");
         try {
-          const r = await metaCreateCampaign(adAccount, { name, objective });
-          externalId = r.id; status = "paused"; // created PAUSED on Meta for review
-        } catch (e: any) { warn = `Saved as draft — Meta launch failed: ${e.message}`; }
+          const r = await createCampaign(platform, adAccount, { name, objective });
+          externalId = r.id; externalAccountId = r.accountId; status = "paused"; // created PAUSED for review
+        } catch (e: any) { warn = `Saved as draft — ${platform} launch failed: ${e.message}`; }
       }
-    } else if (goLive) {
-      warn = `Saved as draft — automated launch for "${platform}" isn't wired yet.`;
     }
 
-    const doc = { clientId, platform, externalId, name, objective, status, dailyBudgetUsd, createdAt: now, updatedAt: now };
+    const doc = { clientId, platform, externalId, externalAccountId, name, objective, status, dailyBudgetUsd, createdAt: now, updatedAt: now };
     const ref = await db.collection(COL.campaigns).add(doc);
     return NextResponse.json({ ok: true, id: ref.id, externalId, status, warn });
   } catch (e: any) {

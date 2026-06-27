@@ -91,7 +91,8 @@ export type CampaignStatus = "draft" | "live" | "paused" | "ended";
 export interface CampaignDoc {
   clientId: string;
   platform: string;           // "meta" | "google" | "tiktok"
-  externalId?: string | null; // platform campaign id once launched
+  externalId?: string | null;        // platform campaign id once launched
+  externalAccountId?: string | null; // customer/advertiser id (needed for reporting)
   name: string;
   objective: string;
   status: CampaignStatus;

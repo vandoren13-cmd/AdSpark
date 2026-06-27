@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { requireAdmin } from "@/lib/admin";
 import { COL } from "@/lib/collections";
-import { metaReady, metaGetInsights } from "@/lib/platforms/meta";
+import { platformReady, getInsights } from "@/lib/platforms";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     let clientId = "";
     let platform = String(b.platform || "");
     let externalId: string | null = null;
+    let externalAccountId: string | null = null;
     let tags: any = null;
 
     if (creativeId) {
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
     }
     if (campaignId) {
       const cp = await db.collection(COL.campaigns).doc(campaignId).get();
-      if (cp.exists) { const c: any = cp.data(); clientId = clientId || c.clientId || ""; platform = platform || c.platform || ""; externalId = c.externalId || null; }
+      if (cp.exists) { const c: any = cp.data(); clientId = clientId || c.clientId || ""; platform = platform || c.platform || ""; externalId = c.externalId || null; externalAccountId = c.externalAccountId || null; }
     }
     if (!creativeId && !campaignId) {
       return NextResponse.json({ ok: false, error: "Provide a creativeId or campaignId." }, { status: 400 });
@@ -49,12 +50,8 @@ export async function POST(req: NextRequest) {
     let m: { impressions: number; clicks: number; spend: number; conversions: number; revenue: number };
     if (b.action === "sync") {
       if (!externalId) return NextResponse.json({ ok: false, error: "Campaign isn't launched on a platform yet." }, { status: 400 });
-      if (platform === "meta") {
-        if (!metaReady()) return NextResponse.json({ ok: false, error: "Meta isn't configured." }, { status: 400 });
-        m = await metaGetInsights(externalId);
-      } else {
-        return NextResponse.json({ ok: false, error: `Result sync for "${platform}" isn't wired yet.` }, { status: 400 });
-      }
+      if (!platformReady(platform)) return NextResponse.json({ ok: false, error: `${platform} isn't configured.` }, { status: 400 });
+      m = await getInsights(platform, externalId, externalAccountId || undefined);
     } else {
       m = {
         impressions: Number(b.impressions || 0), clicks: Number(b.clicks || 0),
