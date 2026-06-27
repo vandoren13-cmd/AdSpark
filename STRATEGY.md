@@ -82,10 +82,20 @@ Veo 3.1 / Kling; UGC → HeyGen + ElevenLabs; IP-clean mode → Bria (licensed +
 
 1. ✅ **Model-router abstraction** (`lib/ai.ts`) — done; engines pluggable; quality per plan.
 2. ✅ **Pricing realigned** — funnel tiers cost-modeled; service tiers defined; lead capture live.
-3. 🔜 **Campaign deployment** — Meta Marketing API, so we actually launch ("never touch the account").
-4. 🔜 **Results ingestion → performance DB** — pull CTR/CPA/ROAS onto `adspark_generations`. *The moat.*
-5. 🔜 **AI-disclosure compliance** — auto-label AI creative (FTC ~$53K/violation; TikTok strictest); sell it as protection.
-6. 🔜 **Pick one vertical** (e.g. Shopify DTC <$1M, med-spas, home services) and own it before expanding.
+3. ✅ **Backend foundations** — data model (`lib/collections.ts`), deny-all Firestore/Storage
+   rules, image persistence to Storage.
+4. ✅ **Billing** — Stripe checkout + portal + webhook sync (`/api/checkout|portal|stripe/webhook`).
+   Activate with `STRIPE_*` env.
+5. ✅ **Operator console** — `/admin` (lead pipeline, clients, campaigns, generations);
+   gated by `ADMIN_EMAILS` / user `admin` flag.
+6. 🟡 **Campaign deployment** — Meta adapter + admin launch built (`lib/platforms/meta.ts`,
+   `/api/admin/campaigns`). Needs a Meta app + `META_ACCESS_TOKEN` + ad account to go live;
+   until then campaigns save as drafts.
+7. 🟡 **Results ingestion → performance DB (the moat)** — built (`/api/admin/results`: manual
+   entry now, Meta insight sync when configured; `results` collection). Remaining: tag
+   `creatives` (vertical/hook/format/offer) so results attribute to *what* converts.
+8. 🔜 **AI-disclosure compliance** — auto-label AI creative (FTC ~$53K/violation; TikTok strictest).
+9. 🔜 **Pick one vertical** (e.g. Shopify DTC <$1M, med-spas, home services) and own it.
 
 ## Non-negotiables (from the dossier)
 

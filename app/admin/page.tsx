@@ -15,6 +15,7 @@ export default function AdminPage() {
   const [denied, setDenied] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [nc, setNc] = useState({ clientId: "", name: "", platform: "meta", objective: "traffic", dailyBudgetUsd: "" });
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
@@ -41,6 +42,48 @@ export default function AdminPage() {
     finally { setBusyId(null); }
   }
 
+  const ncSet = (k: string, v: string) => setNc(s => ({ ...s, [k]: v }));
+
+  async function createCampaign(goLive: boolean) {
+    if (!nc.clientId || !nc.name.trim()) { setErr("Pick a client and enter a campaign name."); return; }
+    setBusyId("new-campaign"); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/campaigns", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ ...nc, dailyBudgetUsd: Number(nc.dailyBudgetUsd) || 0, goLive }) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error);
+      if (j.warn) setErr(j.warn);
+      setNc({ clientId: "", name: "", platform: "meta", objective: "traffic", dailyBudgetUsd: "" });
+      await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+
+  async function syncResults(id: string) {
+    setBusyId(id); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/results", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ action: "sync", campaignId: id }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+
+  async function logResults(id: string) {
+    const spend = Number(prompt("Spend ($)?") || "0");
+    const impressions = Number(prompt("Impressions?") || "0");
+    const clicks = Number(prompt("Clicks?") || "0");
+    const conversions = Number(prompt("Conversions?") || "0");
+    const revenue = Number(prompt("Revenue ($)?") || "0");
+    setBusyId(id); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/results", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ campaignId: id, spend, impressions, clicks, conversions, revenue }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+
   if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
   if (denied) return (
     <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", textAlign: "center", padding: 20 }}>
@@ -59,6 +102,8 @@ export default function AdminPage() {
       <div style={{ fontSize: 26, fontWeight: 900, marginTop: 4 }}>{value}</div>
     </div>
   );
+  const lbl: React.CSSProperties = { fontSize: 10, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, display: "block" };
+  const clientName = (id: string) => { const c = (data?.clients || []).find((x: any) => x.id === id); return c ? (c.company || c.name || c.email) : id; };
 
   return (
     <main style={{ minHeight: "100vh" }}>
@@ -127,6 +172,46 @@ export default function AdminPage() {
                 <div style={{ textAlign: "right" }}>
                   <div style={{ fontSize: 14, fontWeight: 800 }}>${(c.mrrUsd || 0).toLocaleString()}/mo</div>
                   <div style={{ fontSize: 11, color: c.status === "active" ? "#34d399" : "#8b97b3" }}>{c.status}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Campaigns */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Campaigns</div>
+        <div className="card" style={{ padding: 14, marginBottom: 12, display: "grid", gridTemplateColumns: "repeat(5,1fr) auto", gap: 8, alignItems: "end" }}>
+          <div><label style={lbl}>Client</label>
+            <select className="in" value={nc.clientId} onChange={e => ncSet("clientId", e.target.value)}>
+              <option value="">Select…</option>
+              {(data?.clients || []).map((c: any) => <option key={c.id} value={c.id}>{c.company || c.name || c.email}</option>)}
+            </select>
+          </div>
+          <div><label style={lbl}>Name</label><input className="in" value={nc.name} onChange={e => ncSet("name", e.target.value)} placeholder="Spring sale" /></div>
+          <div><label style={lbl}>Platform</label><select className="in" value={nc.platform} onChange={e => ncSet("platform", e.target.value)}><option value="meta">Meta</option><option value="google">Google</option><option value="tiktok">TikTok</option></select></div>
+          <div><label style={lbl}>Objective</label><select className="in" value={nc.objective} onChange={e => ncSet("objective", e.target.value)}><option value="traffic">Traffic</option><option value="sales">Sales</option><option value="leads">Leads</option><option value="awareness">Awareness</option><option value="engagement">Engagement</option></select></div>
+          <div><label style={lbl}>Daily $</label><input className="in" value={nc.dailyBudgetUsd} onChange={e => ncSet("dailyBudgetUsd", e.target.value)} placeholder="50" /></div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button className="btn-ghost btn" disabled={busyId === "new-campaign"} onClick={() => createCampaign(false)} style={{ padding: "10px 12px", fontSize: 12 }}>Draft</button>
+            <button className="btn" disabled={busyId === "new-campaign"} onClick={() => createCampaign(true)} style={{ padding: "10px 12px", fontSize: 12 }}>Go live</button>
+          </div>
+        </div>
+        {(!data?.campaigns || data.campaigns.length === 0) ? (
+          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>No campaigns yet. Create one for a client above.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
+            {data.campaigns.map((c: any) => (
+              <div key={c.id} className="card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ minWidth: 0, flex: "1 1 300px" }}>
+                  <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.name} <span style={{ color: "#8b97b3", fontWeight: 500 }}>· {clientName(c.clientId)}</span></div>
+                  <div style={{ fontSize: 11.5, color: "#8b97b3" }}>
+                    {c.platform} · {c.objective} · {c.status}{c.externalId ? ` · ${c.externalId}` : " · draft"}
+                    {c.lastResults ? ` · $${(c.lastResults.spendUsd || 0).toLocaleString()} spend · ${(c.lastResults.roas || 0).toFixed(2)}x ROAS` : ""}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                  <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => logResults(c.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Log results</button>
+                  {c.externalId && <button className="btn" disabled={busyId === c.id} onClick={() => syncResults(c.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Sync</button>}
                 </div>
               </div>
             ))}

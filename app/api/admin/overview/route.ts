@@ -25,14 +25,16 @@ export async function GET(req: NextRequest) {
       db.collection(COL.generations).where("createdAt", ">=", d30).count().get(),
     ]);
 
-    const [leadsSnap, clientsSnap, gensSnap] = await Promise.all([
+    const [leadsSnap, clientsSnap, campaignsSnap, gensSnap] = await Promise.all([
       db.collection(COL.leads).limit(100).get(),
       db.collection(COL.clients).limit(100).get(),
+      db.collection(COL.campaigns).limit(100).get(),
       db.collection(COL.generations).limit(60).get(),
     ]);
 
     const leads = leadsSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).sort(byNewest).slice(0, 30);
     const clients = clientsSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).sort(byNewest);
+    const campaigns = campaignsSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).sort(byNewest).slice(0, 40);
     const generations = gensSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).sort(byNewest).slice(0, 15);
     const mrr = clients.reduce((s, c: any) => s + (c.status === "active" ? (c.mrrUsd || 0) : 0), 0);
 
@@ -46,7 +48,7 @@ export async function GET(req: NextRequest) {
         gens30d: gens30dC.data().count,
         mrr,
       },
-      leads, clients, generations,
+      leads, clients, campaigns, generations,
     });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Failed to load." }, { status: 500 });
