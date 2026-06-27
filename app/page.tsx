@@ -79,7 +79,30 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section style={{ maxWidth: 760, margin: "0 auto", padding: "10px 22px 60px" }}>
+        <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 900, margin: "0 0 24px" }}>Questions</h2>
+        {[
+          ["Do you charge a percentage of my ad spend?", "No. Self-serve plans are flat monthly. Done-for-you is a flat retainer, completely separate from your ad budget — no spend fees, ever. (That's the #1 complaint about tools like Zeely; we don't do it.)"],
+          ["How is this different from a $19 AI tool?", "Tools hand you raw creative and leave the hard part — strategy, launching, measuring — to you. AdSpark's done-for-you service runs the whole thing end-to-end, and our performance data compounds into knowing what actually converts in your niche."],
+          ["Can you actually run the ads for me?", "Yes. With done-for-you, we build the creative, launch the campaigns, and send you a plain-English report every week. You never touch the ad account."],
+          ["Which platforms do you support?", "Meta (Facebook/Instagram), Google, and TikTok, with native integrations — copy via Claude, images via the latest image models."],
+          ["Is the AI creative compliant?", "Every asset is labeled AI-generated and carries a compliance record, built to meet current FTC and platform (Meta/TikTok/Google) disclosure requirements."],
+        ].map(([q, a]) => (
+          <div key={q} className="card" style={{ padding: 18, marginBottom: 10 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>{q}</div>
+            <div style={{ fontSize: 13.5, color: "#9aa6c2", lineHeight: 1.6 }}>{a}</div>
+          </div>
+        ))}
+      </section>
+
       <footer style={{ textAlign: "center", padding: "30px 20px", color: "#5b6680", fontSize: 12.5, borderTop: "1px solid #161c2e" }}>
+        <div style={{ marginBottom: 8 }}>
+          <a href="/done-for-you" style={{ color: "#8b97b3", margin: "0 8px" }}>Done-for-you</a>·
+          <a href="/login" style={{ color: "#8b97b3", margin: "0 8px" }}>Sign in</a>·
+          <a href="/terms" style={{ color: "#8b97b3", margin: "0 8px" }}>Terms</a>·
+          <a href="/privacy" style={{ color: "#8b97b3", margin: "0 8px" }}>Privacy</a>
+        </div>
         © AdSpark AI · A VanDoren-EMPIRE company
       </footer>
     </main>
