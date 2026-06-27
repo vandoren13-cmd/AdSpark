@@ -9,6 +9,7 @@ import { uploadPng } from "@/lib/storage";
 import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/emails";
 import { complianceRecord } from "@/lib/compliance";
+import { rateLimit } from "@/lib/ratelimit";
 import { COL } from "@/lib/collections";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -21,6 +22,10 @@ export async function POST(req: NextRequest) {
   try {
     const uid = await uidFromRequest(req);
     if (!uid) return NextResponse.json({ ok: false, error: "Please sign in." }, { status: 401 });
+
+    // Burst protection (plan quota is monthly; this caps abuse/cost spikes per minute).
+    const rl = await rateLimit(`gen:${uid}`, 20, 60);
+    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests — give it a moment and try again." }, { status: 429 });
 
     const db = adminDb();
     const userRef = db.collection(COL.users).doc(uid);

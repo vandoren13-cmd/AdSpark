@@ -6,6 +6,7 @@ import { adminDb, uidFromRequest } from "@/lib/firebaseAdmin";
 import { COL } from "@/lib/collections";
 import { sendEmail } from "@/lib/email";
 import { newLeadEmail, leadAckEmail } from "@/lib/emails";
+import { rateLimit, clientIp } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,11 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 export async function POST(req: NextRequest) {
   try {
     const uid = await uidFromRequest(req); // null if not signed in — that's fine
+
+    // Anti-spam: cap submissions per IP.
+    const rl = await rateLimit(`lead:${clientIp(req)}`, 5, 3600);
+    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many submissions. Please try again later." }, { status: 429 });
+
     const b = await req.json().catch(() => ({}));
 
     const email = String(b.email || "").trim().slice(0, 200);

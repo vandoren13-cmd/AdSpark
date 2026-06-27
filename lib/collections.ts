@@ -18,6 +18,8 @@ export const COL = {
   results: "adspark_results",
   reports: "adspark_reports",
   invoices: "adspark_invoices",
+  events: "adspark_events",
+  ratelimits: "adspark_ratelimits",
 } as const;
 
 // ── Funnel (self-serve tool) ─────────────────────────────────────────────────
