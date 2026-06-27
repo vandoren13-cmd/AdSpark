@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       doc = {
         clientId: b.clientId || null, campaignId: b.campaignId || null, generationId: fromGenerationId,
         type: "image", assetUrl: (gen.images && gen.images[0]) || null, copy: (gen.variations && gen.variations[idx]) || null,
-        tags: gen.tags || {}, aiDisclosed: false, status: "draft", createdAt: now,
+        tags: gen.tags || {}, aiDisclosed: true, status: "draft", createdAt: now,
       };
     } else {
       doc = {

@@ -96,12 +96,16 @@ export default function GeneratorPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {result.images?.length > 0 && (
                 <div className="card" style={{ padding: 16 }}>
-                  <div style={{ fontSize: 12, color: "#8b97b3", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.6 }}>AI images</div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                    <div style={{ fontSize: 12, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6 }}>AI images</div>
+                    <div style={{ fontSize: 11, color: "#6b7690" }}>Labeled AI-generated for platform compliance</div>
+                  </div>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 12 }}>
                     {result.images.map((src, i) => (
                       <div key={i} style={{ position: "relative" }}>
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={src} alt={`Ad ${i + 1}`} style={{ width: "100%", borderRadius: 10, border: "1px solid #232a3e" }} />
+                        <span style={{ position: "absolute", top: 8, left: 8, background: "#0a0e1ccc", color: "#c7d0e6", fontSize: 10, fontWeight: 700, padding: "3px 7px", borderRadius: 6, border: "1px solid #2c3450" }}>✦ AI-generated</span>
                         <a href={src} download={`adspark-${i + 1}.png`} className="btn" style={{ position: "absolute", bottom: 8, right: 8, padding: "6px 10px", fontSize: 12 }}>⬇</a>
                       </div>
                     ))}

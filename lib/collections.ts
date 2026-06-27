@@ -52,6 +52,7 @@ export interface GenerationDoc {
   imageCount: number;
   tags?: CreativeTags;     // auto-classified (vertical/hook/format/offer) — moat data
   quality?: ImageQuality;
+  compliance?: any;        // AI-disclosure record (see lib/compliance.ts)
   createdAt: number;
 }
 

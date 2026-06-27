@@ -8,6 +8,7 @@ import { generateAdSet, AdBrief } from "@/lib/ai";
 import { uploadPng } from "@/lib/storage";
 import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/emails";
+import { complianceRecord } from "@/lib/compliance";
 import { COL } from "@/lib/collections";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -62,7 +63,9 @@ export async function POST(req: NextRequest) {
     await genRef.set({
       uid, brief, variations: adSet.variations, creativeBrief: adSet.creativeBrief,
       imagePrompt: adSet.imagePrompt, images: storedImages, imageCount: storedImages.length,
-      tags: adSet.tags, quality: plan.imageQuality, createdAt: now,
+      tags: adSet.tags, quality: plan.imageQuality,
+      compliance: complianceRecord({ images: storedImages.length }),
+      createdAt: now,
     });
     const responseSet = { ...adSet, images: storedImages };
 
