@@ -9,9 +9,16 @@ export default function AccountPage() {
   const router = useRouter();
   const [me, setMe] = useState<any>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [billingBusy, setBillingBusy] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
+  useEffect(() => {
+    const c = new URLSearchParams(window.location.search).get("checkout");
+    if (c === "success") setNotice("✅ Subscription updated — your new plan is active.");
+    else if (c === "cancel") setNotice("Checkout canceled — no changes were made.");
+  }, []);
 
   async function load() {
     try {
@@ -20,6 +27,30 @@ export default function AccountPage() {
       const j = await r.json();
       if (j.ok) setMe(j); else setErr(j.error);
     } catch (e: any) { setErr(e.message); }
+  }
+
+  async function upgrade(planId: string) {
+    setBillingBusy(true); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/checkout", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ plan: planId }) });
+      const j = await r.json();
+      if (j.url) { window.location.href = j.url; return; }
+      setErr(j.error || "Checkout failed.");
+    } catch (e: any) { setErr(e.message); }
+    finally { setBillingBusy(false); }
+  }
+
+  async function manageBilling() {
+    setBillingBusy(true); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/portal", { method: "POST", headers: { Authorization: `Bearer ${t}` } });
+      const j = await r.json();
+      if (j.url) { window.location.href = j.url; return; }
+      setErr(j.error || "Could not open billing portal.");
+    } catch (e: any) { setErr(e.message); }
+    finally { setBillingBusy(false); }
   }
 
   if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
@@ -42,6 +73,7 @@ export default function AccountPage() {
       <div style={{ maxWidth: 880, margin: "0 auto", padding: "24px 18px 60px" }}>
         <h1 style={{ fontSize: 24, marginBottom: 4 }}>Account</h1>
         <div style={{ color: "#8b97b3", fontSize: 13, marginBottom: 20 }}>{user.email}</div>
+        {notice && <div style={{ color: "#34d399", marginBottom: 16, fontSize: 13.5 }}>{notice}</div>}
         {err && <div style={{ color: "#ff6b6b", marginBottom: 16 }}>{err}</div>}
 
         {/* Plan + usage */}
@@ -68,16 +100,23 @@ export default function AccountPage() {
                 <div style={{ fontSize: 12, color: "#9aa6c2", marginBottom: 10 }}>{p.quota.toLocaleString()} gens · {p.variants} variations · {p.images} img</div>
                 {current ? (
                   <div style={{ textAlign: "center", fontSize: 12, fontWeight: 700, color: "#34d399" }}>✓ Current</div>
-                ) : (
-                  <button className="btn" disabled style={{ width: "100%", fontSize: 12.5, opacity: 0.7 }} title="Stripe billing coming soon">
-                    {p.priceUsd ? "Upgrade (soon)" : "Free"}
+                ) : p.priceUsd ? (
+                  <button className="btn" onClick={() => upgrade(p.id)} disabled={billingBusy} style={{ width: "100%", fontSize: 12.5 }}>
+                    {billingBusy ? "…" : "Upgrade"}
                   </button>
+                ) : (
+                  <div style={{ textAlign: "center", fontSize: 12, color: "#8b97b3" }}>Free</div>
                 )}
               </div>
             );
           })}
         </div>
-        <div style={{ fontSize: 12, color: "#6b7690", marginBottom: 28 }}>💳 Stripe billing is being wired up — upgrades go live shortly.</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28, flexWrap: "wrap" }}>
+          {me?.plan?.id && me.plan.id !== "free" && (
+            <button className="btn-ghost btn" onClick={manageBilling} disabled={billingBusy} style={{ fontSize: 12.5, padding: "8px 14px" }}>Manage billing</button>
+          )}
+          <span style={{ fontSize: 12, color: "#6b7690" }}>🔒 Secure checkout & billing by Stripe.</span>
+        </div>
 
         {/* Done-for-you upsell */}
         <div className="card" style={{ padding: 18, marginBottom: 28, border: "1.5px solid #2c3450", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 14, background: "linear-gradient(135deg,#0d1120,#10142a)" }}>
