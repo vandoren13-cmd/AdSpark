@@ -28,6 +28,20 @@ export default function Landing() {
         <div style={{ fontSize: 12.5, color: "#6b7690", marginTop: 12 }}>No credit card required.</div>
       </section>
 
+      {/* Done-for-you anchor band */}
+      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "10px 22px 44px" }}>
+        <div className="card" style={{ padding: 26, border: "1.5px solid #2c3450", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, background: "linear-gradient(135deg,#0d1120,#10142a)" }}>
+          <div style={{ minWidth: 260, flex: "1 1 360px" }}>
+            <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#7c5cff", textTransform: "uppercase", fontWeight: 800, marginBottom: 8 }}>Don't want to DIY?</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>Let us run your ads end-to-end.</div>
+            <div style={{ fontSize: 14, color: "#9aa6c2", lineHeight: 1.55 }}>
+              Done-for-you AI ad management — flat monthly price, <b style={{ color: "#c7d0e6" }}>no % of ad spend, no surprises.</b> You never touch the account.
+            </div>
+          </div>
+          <a href="/done-for-you" className="btn" style={{ padding: "13px 22px", fontSize: 15, whiteSpace: "nowrap" }}>See done-for-you plans →</a>
+        </div>
+      </section>
+
       {/* Features */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "10px 22px 50px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
         {[
@@ -45,9 +59,9 @@ export default function Landing() {
 
       {/* Pricing */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 22px 70px" }}>
-        <h2 style={{ textAlign: "center", fontSize: 30, fontWeight: 900, margin: "0 0 8px" }}>Simple, scalable pricing</h2>
-        <p style={{ textAlign: "center", color: "#9aa6c2", marginTop: 0, marginBottom: 30 }}>Start free. Upgrade when you're ready.</p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+        <h2 style={{ textAlign: "center", fontSize: 30, fontWeight: 900, margin: "0 0 8px" }}>Prefer to run ads yourself?</h2>
+        <p style={{ textAlign: "center", color: "#9aa6c2", marginTop: 0, marginBottom: 30 }}>Self-serve plans for DIY creators. Start free, upgrade when you're ready — or <a href="/done-for-you" style={{ color: "#7c5cff" }}>let us run them for you</a>.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
           {PLAN_LIST.map(p => (
             <div key={p.id} className="card" style={{ padding: 20, border: p.id === "pro" ? "1.5px solid #7c5cff" : undefined, position: "relative" }}>
               {p.id === "pro" && <div style={{ position: "absolute", top: -10, left: 20, background: "linear-gradient(135deg,#7c5cff,#4f8cff)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 20 }}>POPULAR</div>}

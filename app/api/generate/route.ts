@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     };
     if (!brief.product.trim()) return NextResponse.json({ ok: false, error: "Describe your product/offer." }, { status: 400 });
 
-    const adSet = await generateAdSet(brief, plan.variants, plan.images);
+    const adSet = await generateAdSet(brief, plan.variants, plan.images, plan.imageQuality);
     if (!adSet.variations.length) return NextResponse.json({ ok: false, error: "Generation failed — please try again." }, { status: 502 });
 
     // Persist history (text only — images are returned to the client; Storage upload TBD).

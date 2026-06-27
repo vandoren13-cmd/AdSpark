@@ -1,7 +1,8 @@
 // lib/ai.ts — SERVER ONLY. The AdSpark generation engine.
 //   • Ad COPY  → Claude (claude-opus-4-8) — superior creative/direct-response writing.
-//   • Ad IMAGES → OpenAI gpt-image-1 — returns base64 PNGs.
+//   • Ad IMAGES → a pluggable model-router (default: OpenAI gpt-image-1) — returns base64 PNGs.
 import Anthropic from "@anthropic-ai/sdk";
+import type { ImageQuality } from "@/lib/plans";
 
 export interface AdBrief {
   brand: string;
@@ -74,32 +75,58 @@ Return JSON exactly:
   return j;
 }
 
-// ── Ad images (OpenAI gpt-image-1) ───────────────────────────────────────────
-export async function generateAdImages(prompt: string, n: number): Promise<string[]> {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return [];
+// ── Ad images — model-router ──────────────────────────────────────────────────
+// Don't hard-wire one vendor: gpt-image-1 sunsets 2026-10-23. An engine produces a
+// single image (data URL) or null; register new vendors (FLUX/Ideogram/Bria) below and
+// select via the IMAGE_ENGINE env var. Swapping engines is then config, not a rewrite.
+interface ImageEngine {
+  id: string;
+  generate(prompt: string, quality: ImageQuality): Promise<string | null>;
+}
+
+const openaiGptImage: ImageEngine = {
+  id: "openai-gpt-image-1",
+  async generate(prompt, quality) {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key) return null;
+    const res = await fetch("https://api.openai.com/v1/images/generations", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-image-1", prompt, n: 1, size: "1024x1024", quality, output_format: "png" }),
+    });
+    if (!res.ok) {
+      const raw = await res.text(); let m = raw;
+      try { m = JSON.parse(raw)?.error?.message || raw; } catch { /* */ }
+      throw new Error(/billing hard limit/i.test(m) ? "Image generation paused (billing limit)." : `Image error: ${String(m).slice(0, 120)}`);
+    }
+    const b64 = (await res.json())?.data?.[0]?.b64_json;
+    return b64 ? `data:image/png;base64,${b64}` : null;
+  },
+};
+
+// Register additional engines here, then point IMAGE_ENGINE at one (e.g. "flux").
+const ENGINES: Record<string, ImageEngine> = {
+  "openai-gpt-image-1": openaiGptImage,
+};
+
+function imageEngine(): ImageEngine {
+  return ENGINES[process.env.IMAGE_ENGINE || "openai-gpt-image-1"] || openaiGptImage;
+}
+
+export async function generateAdImages(prompt: string, n: number, quality: ImageQuality = "medium"): Promise<string[]> {
+  const engine = imageEngine();
   const out: string[] = [];
   for (let i = 0; i < n; i++) {
     try {
-      const res = await fetch("https://api.openai.com/v1/images/generations", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ model: "gpt-image-1", prompt, n: 1, size: "1024x1024", quality: "medium", output_format: "png" }),
-      });
-      if (!res.ok) {
-        const raw = await res.text(); let m = raw;
-        try { m = JSON.parse(raw)?.error?.message || raw; } catch { /* */ }
-        throw new Error(/billing hard limit/i.test(m) ? "Image generation paused (billing limit)." : `Image error: ${String(m).slice(0, 120)}`);
-      }
-      const b64 = (await res.json())?.data?.[0]?.b64_json;
-      if (b64) out.push(`data:image/png;base64,${b64}`);
+      const url = await engine.generate(prompt, quality);
+      if (url) out.push(url);
     } catch (e) { if (i === 0) throw e; /* partial set OK after the first */ }
   }
   return out;
 }
 
-export async function generateAdSet(brief: AdBrief, variants: number, images: number): Promise<AdSet> {
+export async function generateAdSet(brief: AdBrief, variants: number, images: number, quality: ImageQuality = "medium"): Promise<AdSet> {
   const copy = await generateAdCopy(brief, variants);
-  const imgs = images > 0 ? await generateAdImages(copy.imagePrompt, images) : [];
+  const imgs = images > 0 ? await generateAdImages(copy.imagePrompt, images, quality) : [];
   return { ...copy, images: imgs };
 }

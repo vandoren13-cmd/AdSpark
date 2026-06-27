@@ -58,7 +58,7 @@ export default function AccountPage() {
 
         {/* Upgrade */}
         <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Plans</div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 24 }}>
           {PLAN_LIST.map(p => {
             const current = me?.plan?.id === p.id;
             return (
@@ -78,6 +78,16 @@ export default function AccountPage() {
           })}
         </div>
         <div style={{ fontSize: 12, color: "#6b7690", marginBottom: 28 }}>💳 Stripe billing is being wired up — upgrades go live shortly.</div>
+
+        {/* Done-for-you upsell */}
+        <div className="card" style={{ padding: 18, marginBottom: 28, border: "1.5px solid #2c3450", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 14, background: "linear-gradient(135deg,#0d1120,#10142a)" }}>
+          <div style={{ minWidth: 240, flex: "1 1 320px" }}>
+            <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#7c5cff", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Done-for-you</div>
+            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Want us to run your ads for you?</div>
+            <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>Flat monthly price, no % of ad spend, no surprises. We build the creative, launch, and report — you never touch the account.</div>
+          </div>
+          <a href="/done-for-you" className="btn" style={{ padding: "11px 18px", fontSize: 14, whiteSpace: "nowrap" }}>See managed plans →</a>
+        </div>
 
         {/* History */}
         <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Recent generations</div>
