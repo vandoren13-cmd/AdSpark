@@ -2,10 +2,12 @@
 // Verifies the user → enforces monthly quota → generates copy + images → saves
 // history → decrements quota. Returns the ad set + remaining quota.
 import { NextRequest, NextResponse } from "next/server";
-import { uidFromRequest, adminDb } from "@/lib/firebaseAdmin";
+import { uidFromRequest, adminDb, adminAuth } from "@/lib/firebaseAdmin";
 import { planFor } from "@/lib/plans";
 import { generateAdSet, AdBrief } from "@/lib/ai";
 import { uploadPng } from "@/lib/storage";
+import { sendEmail } from "@/lib/email";
+import { welcomeEmail } from "@/lib/emails";
 import { COL } from "@/lib/collections";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -23,6 +25,7 @@ export async function POST(req: NextRequest) {
     const userRef = db.collection(COL.users).doc(uid);
     const snap = await userRef.get();
     const u: any = snap.exists ? snap.data() : {};
+    const isNewUser = !snap.exists;
     const plan = planFor(u.plan);
 
     // Monthly quota window — reset the counter when the period rolls over.
@@ -68,6 +71,14 @@ export async function POST(req: NextRequest) {
       plan: plan.id, periodKey: pk, used: (u.periodKey === pk ? FieldValue.increment(1) : 1),
       email: u.email || null, updatedAt: now, createdAt: u.createdAt || now,
     }, { merge: true });
+
+    // Welcome the user on their first generation (best-effort; no-ops until email configured).
+    if (isNewUser) {
+      try {
+        const email = u.email || (await adminAuth().getUser(uid)).email;
+        if (email) { const w = welcomeEmail(); await sendEmail({ to: email, subject: w.subject, html: w.html, idempotencyKey: `welcome:${uid}` }); }
+      } catch { /* */ }
+    }
 
     return NextResponse.json({
       ok: true, id: genRef.id, adSet: responseSet,

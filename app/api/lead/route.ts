@@ -4,6 +4,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, uidFromRequest } from "@/lib/firebaseAdmin";
 import { COL } from "@/lib/collections";
+import { sendEmail } from "@/lib/email";
+import { newLeadEmail, leadAckEmail } from "@/lib/emails";
 
 export const runtime = "nodejs";
 
@@ -34,6 +36,17 @@ export async function POST(req: NextRequest) {
     };
 
     await adminDb().collection(COL.leads).add(lead);
+
+    // Notify operators + acknowledge the lead. Best-effort: never blocks or fails
+    // the request, and no-ops cleanly until email is configured.
+    const admins = (process.env.ADMIN_EMAILS || "").split(",").map(s => s.trim()).filter(Boolean);
+    const nl = newLeadEmail(lead);
+    const ack = leadAckEmail(lead);
+    await Promise.allSettled([
+      admins.length ? sendEmail({ to: admins, subject: nl.subject, html: nl.html }) : Promise.resolve(),
+      sendEmail({ to: lead.email, subject: ack.subject, html: ack.html }),
+    ]);
+
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Failed to submit." }, { status: 500 });
