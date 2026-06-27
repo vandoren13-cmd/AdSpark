@@ -3,6 +3,7 @@
 import { initializeApp, getApps, cert, App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
+import { getStorage } from "firebase-admin/storage";
 
 let app: App;
 function admin(): App {
@@ -20,6 +21,7 @@ function admin(): App {
 
 export const adminAuth = () => getAuth(admin());
 export const adminDb = () => getFirestore(admin());
+export const adminStorage = () => getStorage(admin());
 
 // Verify a Firebase ID token from the Authorization: Bearer header → uid (or null).
 export async function uidFromRequest(req: Request): Promise<string | null> {

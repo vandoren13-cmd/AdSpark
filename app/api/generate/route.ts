@@ -5,6 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest, adminDb } from "@/lib/firebaseAdmin";
 import { planFor } from "@/lib/plans";
 import { generateAdSet, AdBrief } from "@/lib/ai";
+import { uploadPng } from "@/lib/storage";
+import { COL } from "@/lib/collections";
 import { FieldValue } from "firebase-admin/firestore";
 
 export const runtime = "nodejs";
@@ -18,7 +20,7 @@ export async function POST(req: NextRequest) {
     if (!uid) return NextResponse.json({ ok: false, error: "Please sign in." }, { status: 401 });
 
     const db = adminDb();
-    const userRef = db.collection("adspark_users").doc(uid);
+    const userRef = db.collection(COL.users).doc(uid);
     const snap = await userRef.get();
     const u: any = snap.exists ? snap.data() : {};
     const plan = planFor(u.plan);
@@ -44,13 +46,22 @@ export async function POST(req: NextRequest) {
     const adSet = await generateAdSet(brief, plan.variants, plan.images, plan.imageQuality);
     if (!adSet.variations.length) return NextResponse.json({ ok: false, error: "Generation failed — please try again." }, { status: 502 });
 
-    // Persist history (text only — images are returned to the client; Storage upload TBD).
+    // Persist images to Firebase Storage so they survive refresh and power history,
+    // the client portal, and the creative library. Falls back to the inline data URL
+    // if an upload fails, so a Storage hiccup never loses a paid generation.
     const now = Date.now();
-    const genRef = db.collection("adspark_generations").doc();
+    const genRef = db.collection(COL.generations).doc();
+    const storedImages: string[] = [];
+    for (let i = 0; i < adSet.images.length; i++) {
+      try { storedImages.push(await uploadPng(`generations/${uid}/${genRef.id}/${i}.png`, adSet.images[i])); }
+      catch { storedImages.push(adSet.images[i]); }
+    }
     await genRef.set({
       uid, brief, variations: adSet.variations, creativeBrief: adSet.creativeBrief,
-      imagePrompt: adSet.imagePrompt, imageCount: adSet.images.length, createdAt: now,
+      imagePrompt: adSet.imagePrompt, images: storedImages, imageCount: storedImages.length,
+      quality: plan.imageQuality, createdAt: now,
     });
+    const responseSet = { ...adSet, images: storedImages };
 
     // Decrement quota (atomic).
     await userRef.set({
@@ -59,7 +70,7 @@ export async function POST(req: NextRequest) {
     }, { merge: true });
 
     return NextResponse.json({
-      ok: true, id: genRef.id, adSet,
+      ok: true, id: genRef.id, adSet: responseSet,
       plan: plan.id, remaining: Math.max(0, plan.quota - used - 1), quota: plan.quota,
     });
   } catch (e: any) {

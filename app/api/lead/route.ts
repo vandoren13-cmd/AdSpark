@@ -3,6 +3,7 @@
 // (if a valid token is present we attach the uid). No quota, no auth required.
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb, uidFromRequest } from "@/lib/firebaseAdmin";
+import { COL } from "@/lib/collections";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
       createdAt: Date.now(),
     };
 
-    await adminDb().collection("adspark_leads").add(lead);
+    await adminDb().collection(COL.leads).add(lead);
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Failed to submit." }, { status: 500 });
