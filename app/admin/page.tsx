@@ -96,6 +96,16 @@ export default function AdminPage() {
     finally { setBusyId(null); }
   }
 
+  async function generateReport(clientId: string) {
+    setBusyId(clientId); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/reports", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ clientId, email: true }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+
   if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
   if (denied) return (
     <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", textAlign: "center", padding: 20 }}>
@@ -211,10 +221,31 @@ export default function AdminPage() {
                   <div style={{ fontSize: 13.5, fontWeight: 700 }}>{c.company || c.name || c.email}</div>
                   <div style={{ fontSize: 11.5, color: "#8b97b3" }}>{[c.serviceTier, c.email].filter(Boolean).join(" · ")}</div>
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 14, fontWeight: 800 }}>${(c.mrrUsd || 0).toLocaleString()}/mo</div>
-                  <div style={{ fontSize: 11, color: c.status === "active" ? "#34d399" : "#8b97b3" }}>{c.status}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => generateReport(c.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Report</button>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 14, fontWeight: 800 }}>${(c.mrrUsd || 0).toLocaleString()}/mo</div>
+                    <div style={{ fontSize: 11, color: c.status === "active" ? "#34d399" : "#8b97b3" }}>{c.status}</div>
+                  </div>
                 </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Client reports */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Client reports</div>
+        {(!data?.reports || data.reports.length === 0) ? (
+          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>No reports yet. Click "Report" on a client to generate a shareable performance report (and email it to them).</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
+            {data.reports.map((r: any) => (
+              <div key={r.id} className="card" style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700 }}>{r.clientName} <span style={{ color: "#8b97b3", fontWeight: 500 }}>· {r.periodStart}→{r.periodEnd}</span></div>
+                  <div style={{ fontSize: 11.5, color: "#8b97b3" }}>${(r.metrics?.spendUsd || 0).toLocaleString()} spend · {(r.metrics?.roas || 0)}x ROAS{r.sentAt ? " · emailed ✓" : ""}</div>
+                </div>
+                <a className="btn-ghost btn" href={`/r/${r.id}?t=${r.token}`} target="_blank" rel="noreferrer" style={{ padding: "5px 10px", fontSize: 12 }}>Open ↗</a>
               </div>
             ))}
           </div>
