@@ -50,6 +50,7 @@ export interface GenerationDoc {
   imagePrompt: string;
   images: string[];        // persisted Storage download URLs
   imageCount: number;
+  tags?: CreativeTags;     // auto-classified (vertical/hook/format/offer) — moat data
   quality?: ImageQuality;
   createdAt: number;
 }
@@ -133,6 +134,7 @@ export interface ResultDoc {
   ctr: number;
   cpaUsd: number;
   roas: number;
+  tags?: CreativeTags;        // copied from the creative — lets insights aggregate by what converts
   ingestedAt: number;
 }
 

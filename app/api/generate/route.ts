@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
     await genRef.set({
       uid, brief, variations: adSet.variations, creativeBrief: adSet.creativeBrief,
       imagePrompt: adSet.imagePrompt, images: storedImages, imageCount: storedImages.length,
-      quality: plan.imageQuality, createdAt: now,
+      tags: adSet.tags, quality: plan.imageQuality, createdAt: now,
     });
     const responseSet = { ...adSet, images: storedImages };
 

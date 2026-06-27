@@ -69,16 +69,28 @@ export default function AdminPage() {
     finally { setBusyId(null); }
   }
 
-  async function logResults(id: string) {
+  async function promptAndLog(base: any, key: string) {
     const spend = Number(prompt("Spend ($)?") || "0");
     const impressions = Number(prompt("Impressions?") || "0");
     const clicks = Number(prompt("Clicks?") || "0");
     const conversions = Number(prompt("Conversions?") || "0");
     const revenue = Number(prompt("Revenue ($)?") || "0");
-    setBusyId(id); setErr(null);
+    setBusyId(key); setErr(null);
     try {
       const t = await getToken(); if (!t) return;
-      const r = await fetch("/api/admin/results", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ campaignId: id, spend, impressions, clicks, conversions, revenue }) });
+      const r = await fetch("/api/admin/results", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ ...base, spend, impressions, clicks, conversions, revenue }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+  const logResults = (id: string) => promptAndLog({ campaignId: id }, id);
+  const logCreativeResults = (id: string) => promptAndLog({ creativeId: id }, id);
+
+  async function promoteCreative(genId: string) {
+    setBusyId(genId); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/creatives", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ fromGenerationId: genId }) });
       const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
     } catch (e: any) { setErr(e.message); }
     finally { setBusyId(null); }
@@ -119,14 +131,44 @@ export default function AdminPage() {
         {err && <div style={{ color: "#ff6b6b", marginBottom: 16 }}>{err}</div>}
 
         {/* Stats */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 12, marginBottom: 26 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 12, marginBottom: 26 }}>
           {stat("MRR (service)", `$${(s?.mrr ?? 0).toLocaleString()}`)}
+          {stat("Blended ROAS", `${data?.insights?.totals?.roas ?? 0}x`)}
           {stat("New leads", s?.leadsNew ?? 0)}
           {stat("Clients", s?.clients ?? 0)}
+          {stat("Creatives", s?.creatives ?? 0)}
           {stat("Users", s?.users ?? 0)}
           {stat("Gens (30d)", s?.gens30d ?? 0)}
           {stat("Gens (all)", s?.gensTotal ?? 0)}
         </div>
+
+        {/* Insights — what's converting (the moat readout) */}
+        {data?.insights && (
+          <div style={{ marginBottom: 26 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 8px" }}>What's converting
+              <span style={{ color: "#8b97b3", fontWeight: 500, fontSize: 12 }}> · {data.insights.totals.results} results · ${data.insights.totals.spendUsd.toLocaleString()} spend · {data.insights.totals.roas}x blended ROAS</span>
+            </div>
+            {data.insights.totals.results === 0 ? (
+              <div className="card" style={{ padding: 16, color: "#8b97b3", fontSize: 13 }}>No performance data yet. Promote a generation to a creative (↓) and log results on it — every row is tagged by hook/format/vertical, and this becomes your proprietary "what converts" benchmark.</div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+                {([["By hook", "byHook"], ["By format", "byFormat"], ["By vertical", "byVertical"], ["By platform", "byPlatform"]] as const).map(([title, k]) => (
+                  <div key={k} className="card" style={{ padding: 14 }}>
+                    <div style={{ fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{title}</div>
+                    {((data.insights as any)[k] || []).length === 0
+                      ? <div style={{ fontSize: 12, color: "#6b7690" }}>—</div>
+                      : ((data.insights as any)[k]).map((row: any) => (
+                        <div key={row.key} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, padding: "3px 0", gap: 8 }}>
+                          <span style={{ color: "#c7d0e6", textTransform: "capitalize", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.key}</span>
+                          <span style={{ color: "#34d399", fontWeight: 700, flexShrink: 0 }}>{row.roas}x <span style={{ color: "#6b7690", fontWeight: 500 }}>({row.count})</span></span>
+                        </div>
+                      ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Leads */}
         <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Leads</div>
@@ -218,6 +260,28 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Creatives library */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Creatives <span style={{ color: "#8b97b3", fontWeight: 500, fontSize: 12 }}>· log results here to build the moat</span></div>
+        {(!data?.creatives || data.creatives.length === 0) ? (
+          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>No creatives yet. Promote a generation below (→ Creative) to start tracking performance by tag.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
+            {data.creatives.map((c: any) => (
+              <div key={c.id} className="card" style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0, flex: "1 1 280px" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {c.assetUrl && <img src={c.assetUrl} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover", border: "1px solid #232a3e" }} />}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.copy?.headline || c.type}</div>
+                    <div style={{ fontSize: 11.5, color: "#7c5cff" }}>{[c.tags?.hook, c.tags?.format, c.tags?.vertical, c.tags?.offer].filter(Boolean).join(" · ") || "untagged"}</div>
+                  </div>
+                </div>
+                <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => logCreativeResults(c.id)} style={{ padding: "5px 10px", fontSize: 12, flexShrink: 0 }}>Log results</button>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Recent generations */}
         <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Recent generations</div>
         {(!data?.generations || data.generations.length === 0) ? (
@@ -230,7 +294,10 @@ export default function AdminPage() {
                   <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.brief?.product || "—"}</div>
                   <div style={{ fontSize: 11.5, color: "#8b97b3" }}>{g.brief?.platform} · {g.variations?.length || 0} variations · {g.imageCount || 0} images</div>
                 </div>
-                <div style={{ fontSize: 11, color: "#6b7690", flexShrink: 0 }}>{g.createdAt ? new Date(g.createdAt).toLocaleString() : ""}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                  <button className="btn-ghost btn" disabled={busyId === g.id} onClick={() => promoteCreative(g.id)} style={{ padding: "4px 9px", fontSize: 11.5 }}>→ Creative</button>
+                  <span style={{ fontSize: 11, color: "#6b7690" }}>{g.createdAt ? new Date(g.createdAt).toLocaleString() : ""}</span>
+                </div>
               </div>
             ))}
           </div>

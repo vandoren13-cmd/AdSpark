@@ -1,9 +1,10 @@
 // app/api/admin/results/route.ts — the performance-database pipeline (the moat).
-// Admin-gated. Writes a results row for a campaign and rolls a summary onto it.
-//   POST { campaignId, action: "sync" }                         → pull from the platform (Meta)
-//   POST { campaignId, impressions, clicks, spend, conversions, revenue }  → manual entry
-// Manual entry means the moat can start accumulating from client #1, before any
-// platform API is wired.
+// Admin-gated. Attributes a results row to a CREATIVE (preferred — carries the
+// vertical/hook/format/offer tags that power insights) or to a CAMPAIGN.
+//   POST { creativeId, impressions, clicks, spend, conversions, revenue } → per-creative (tagged)
+//   POST { campaignId, ...metrics }                                       → per-campaign
+//   POST { campaignId, action: "sync" }                                   → pull from Meta
+// Manual entry means the moat accumulates from client #1, before any platform API.
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";
 import { requireAdmin } from "@/lib/admin";
@@ -19,25 +20,40 @@ export async function POST(req: NextRequest) {
     if (!uid) return NextResponse.json({ ok: false, error: "Not authorized." }, { status: 403 });
 
     const b = await req.json().catch(() => ({}));
-    const campaignId = String(b.campaignId || "");
-    if (!campaignId) return NextResponse.json({ ok: false, error: "Campaign id required." }, { status: 400 });
-
     const db = adminDb();
-    const cRef = db.collection(COL.campaigns).doc(campaignId);
-    const cSnap = await cRef.get();
-    if (!cSnap.exists) return NextResponse.json({ ok: false, error: "Campaign not found." }, { status: 404 });
-    const camp: any = cSnap.data();
-
     const now = Date.now();
-    let m: { impressions: number; clicks: number; spend: number; conversions: number; revenue: number };
 
+    let creativeId = String(b.creativeId || "");
+    let campaignId = String(b.campaignId || "");
+    let clientId = "";
+    let platform = String(b.platform || "");
+    let externalId: string | null = null;
+    let tags: any = null;
+
+    if (creativeId) {
+      const cr = await db.collection(COL.creatives).doc(creativeId).get();
+      if (!cr.exists) return NextResponse.json({ ok: false, error: "Creative not found." }, { status: 404 });
+      const c: any = cr.data();
+      tags = c.tags || null;
+      clientId = c.clientId || "";
+      campaignId = campaignId || c.campaignId || "";
+    }
+    if (campaignId) {
+      const cp = await db.collection(COL.campaigns).doc(campaignId).get();
+      if (cp.exists) { const c: any = cp.data(); clientId = clientId || c.clientId || ""; platform = platform || c.platform || ""; externalId = c.externalId || null; }
+    }
+    if (!creativeId && !campaignId) {
+      return NextResponse.json({ ok: false, error: "Provide a creativeId or campaignId." }, { status: 400 });
+    }
+
+    let m: { impressions: number; clicks: number; spend: number; conversions: number; revenue: number };
     if (b.action === "sync") {
-      if (!camp.externalId) return NextResponse.json({ ok: false, error: "Campaign isn't launched on a platform yet." }, { status: 400 });
-      if (camp.platform === "meta") {
+      if (!externalId) return NextResponse.json({ ok: false, error: "Campaign isn't launched on a platform yet." }, { status: 400 });
+      if (platform === "meta") {
         if (!metaReady()) return NextResponse.json({ ok: false, error: "Meta isn't configured." }, { status: 400 });
-        m = await metaGetInsights(camp.externalId);
+        m = await metaGetInsights(externalId);
       } else {
-        return NextResponse.json({ ok: false, error: `Result sync for "${camp.platform}" isn't wired yet.` }, { status: 400 });
+        return NextResponse.json({ ok: false, error: `Result sync for "${platform}" isn't wired yet.` }, { status: 400 });
       }
     } else {
       m = {
@@ -51,14 +67,20 @@ export async function POST(req: NextRequest) {
     const roas = m.spend ? m.revenue / m.spend : 0;
     const date = new Date(now).toISOString().slice(0, 10);
 
-    const result = {
-      creativeId: String(b.creativeId || ""), campaignId, clientId: camp.clientId, platform: camp.platform,
+    const result: any = {
+      creativeId: creativeId || "", campaignId: campaignId || "", clientId, platform,
       date, impressions: m.impressions, clicks: m.clicks, spendUsd: m.spend, conversions: m.conversions,
       revenueUsd: m.revenue, ctr, cpaUsd, roas, ingestedAt: now,
     };
-    await db.collection(COL.results).add(result);
-    await cRef.set({ lastResults: { spendUsd: m.spend, roas, conversions: m.conversions, ctr, date }, updatedAt: now }, { merge: true });
+    if (tags) result.tags = tags; // attribute performance to what converts
 
+    await db.collection(COL.results).add(result);
+    if (campaignId) {
+      await db.collection(COL.campaigns).doc(campaignId).set(
+        { lastResults: { spendUsd: m.spend, roas, conversions: m.conversions, ctr, date }, updatedAt: now },
+        { merge: true },
+      );
+    }
     return NextResponse.json({ ok: true, result });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Failed." }, { status: 500 });

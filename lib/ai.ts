@@ -19,10 +19,20 @@ export interface AdVariation {
   hashtags: string[];
   cta: string;
 }
+// The moat: every generation is auto-tagged so results can be attributed to what
+// actually converts (by vertical / hook / format / offer). Produced in the same
+// Claude call as the copy — zero extra cost or latency.
+export interface AdTags {
+  vertical: string;  // niche, e.g. "skincare", "b2b saas", "home services"
+  hook: string;      // dominant angle, e.g. "problem-solution", "social-proof", "urgency"
+  format: string;    // creative format, e.g. "ugc", "product-shot", "lifestyle", "testimonial"
+  offer: string;     // offer type, e.g. "discount", "free-trial", "bundle", "lead-magnet"
+}
 export interface AdSet {
   variations: AdVariation[];
   creativeBrief: string;
   imagePrompt: string;
+  tags: AdTags;
   images: string[]; // data URLs (data:image/png;base64,...)
 }
 
@@ -32,7 +42,7 @@ function parseJSON<T>(raw: string, fallback: T): T {
 }
 
 // ── Ad copy (Claude) ─────────────────────────────────────────────────────────
-export async function generateAdCopy(brief: AdBrief, variants: number): Promise<{ variations: AdVariation[]; creativeBrief: string; imagePrompt: string }> {
+export async function generateAdCopy(brief: AdBrief, variants: number): Promise<{ variations: AdVariation[]; creativeBrief: string; imagePrompt: string; tags: AdTags }> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const msg = await anthropic.messages.create({
     model: "claude-opus-4-8",
@@ -58,12 +68,18 @@ Return JSON exactly:
       "hashtags": ["6-10 relevant, buyer-intent hashtags for ${brief.platform}"],
       "cta": "the call to action" } ],
   "creativeBrief": "a short creative brief for the design/visual direction (1-2 sentences)",
-  "imagePrompt": "a vivid, specific prompt for an eye-catching, on-brand AD IMAGE for ${brief.platform} — clean, high-contrast, scroll-stopping; NO real logos/trademarks, NO watermark"
+  "imagePrompt": "a vivid, specific prompt for an eye-catching, on-brand AD IMAGE for ${brief.platform} — clean, high-contrast, scroll-stopping; NO real logos/trademarks, NO watermark",
+  "tags": {
+    "vertical": "the business vertical/niche in 1-3 words (e.g. skincare, b2b saas, home services)",
+    "hook": "the single dominant hook angle (one of: problem-solution, social-proof, urgency, curiosity, benefit, fear-of-missing-out, authority)",
+    "format": "the creative format (one of: ugc, product-shot, lifestyle, testimonial, founder-story, comparison, meme)",
+    "offer": "the core offer type (one of: discount, free-trial, bundle, new-arrival, lead-magnet, consultation, none)"
+  }
 }`,
     }],
   });
   const text = msg.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
-  const j = parseJSON<{ variations: AdVariation[]; creativeBrief: string; imagePrompt: string }>(text, { variations: [], creativeBrief: "", imagePrompt: "" });
+  const j = parseJSON<{ variations: AdVariation[]; creativeBrief: string; imagePrompt: string; tags: AdTags }>(text, { variations: [], creativeBrief: "", imagePrompt: "", tags: { vertical: "", hook: "", format: "", offer: "" } });
   // normalize
   j.variations = (Array.isArray(j.variations) ? j.variations : []).slice(0, variants).map(v => ({
     headline: String(v?.headline || ""), primaryText: String(v?.primaryText || ""),
@@ -72,6 +88,8 @@ Return JSON exactly:
   }));
   j.creativeBrief = String(j.creativeBrief || "");
   j.imagePrompt = String(j.imagePrompt || `${brief.product} ad for ${brief.platform}, ${brief.tone}, clean high-contrast`);
+  const t: any = j.tags || {};
+  j.tags = { vertical: String(t.vertical || "").toLowerCase().slice(0, 40), hook: String(t.hook || "").toLowerCase().slice(0, 40), format: String(t.format || "").toLowerCase().slice(0, 40), offer: String(t.offer || "").toLowerCase().slice(0, 40) };
   return j;
 }
 
