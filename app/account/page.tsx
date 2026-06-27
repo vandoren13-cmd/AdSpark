@@ -66,6 +66,7 @@ export default function AccountPage() {
         </a>
         <div style={{ display: "flex", gap: 10 }}>
           <a href="/app" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>← Generator</a>
+          <a href="/portal" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Client portal</a>
           <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
         </div>
       </header>
