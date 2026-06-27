@@ -1,11 +1,13 @@
 import React from "react";
 import { PLAN_LIST } from "@/lib/plans";
+import { PageView } from "@/lib/PageView";
 
 const grad = { background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } as React.CSSProperties;
 
 export default function Landing() {
   return (
     <main>
+      <PageView name="home" />
       {/* Nav */}
       <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ fontWeight: 900, fontSize: 20 }}><span style={grad}>AdSpark AI</span></div>

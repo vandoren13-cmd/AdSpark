@@ -17,24 +17,32 @@ export async function GET(req: NextRequest) {
     const db = adminDb();
     const d30 = Date.now() - 30 * 86400000;
 
-    const [usersC, leadsNewC, clientsC, creativesC, gensTotalC, gens30dC] = await Promise.all([
+    const [usersC, leadsNewC, clientsC, creativesC, gensTotalC, gens30dC, events30dC] = await Promise.all([
       db.collection(COL.users).count().get(),
       db.collection(COL.leads).where("status", "==", "new").count().get(),
       db.collection(COL.clients).count().get(),
       db.collection(COL.creatives).count().get(),
       db.collection(COL.generations).count().get(),
       db.collection(COL.generations).where("createdAt", ">=", d30).count().get(),
+      db.collection(COL.events).where("createdAt", ">=", d30).count().get(),
     ]);
 
-    const [leadsSnap, clientsSnap, campaignsSnap, creativesSnap, resultsSnap, reportsSnap, gensSnap] = await Promise.all([
+    const [leadsSnap, clientsSnap, campaignsSnap, creativesSnap, resultsSnap, reportsSnap, eventsSnap, gensSnap] = await Promise.all([
       db.collection(COL.leads).limit(100).get(),
       db.collection(COL.clients).limit(100).get(),
       db.collection(COL.campaigns).limit(100).get(),
       db.collection(COL.creatives).limit(100).get(),
       db.collection(COL.results).limit(500).get(),
       db.collection(COL.reports).limit(50).get(),
+      db.collection(COL.events).limit(1000).get(),
       db.collection(COL.generations).limit(60).get(),
     ]);
+
+    // Funnel: top events by volume (last 1000).
+    const events = eventsSnap.docs.map(d => d.data() as any);
+    const evCounts: Record<string, number> = {};
+    for (const e of events) evCounts[e.name] = (evCounts[e.name] || 0) + 1;
+    const funnel = Object.entries(evCounts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 10);
 
     const leads = leadsSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).sort(byNewest).slice(0, 30);
     const clients = clientsSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })).sort(byNewest);
@@ -77,9 +85,10 @@ export async function GET(req: NextRequest) {
         creatives: creativesC.data().count,
         gensTotal: gensTotalC.data().count,
         gens30d: gens30dC.data().count,
+        events30d: events30dC.data().count,
         mrr,
       },
-      insights, leads, clients, campaigns, creatives, reports, generations,
+      insights, funnel, leads, clients, campaigns, creatives, reports, generations,
     });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Failed to load." }, { status: 500 });

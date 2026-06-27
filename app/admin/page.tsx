@@ -150,7 +150,23 @@ export default function AdminPage() {
           {stat("Users", s?.users ?? 0)}
           {stat("Gens (30d)", s?.gens30d ?? 0)}
           {stat("Gens (all)", s?.gensTotal ?? 0)}
+          {stat("Events (30d)", s?.events30d ?? 0)}
         </div>
+
+        {/* Funnel events */}
+        {data?.funnel?.length > 0 && (
+          <div className="card" style={{ padding: 14, marginBottom: 26 }}>
+            <div style={{ fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>Funnel events</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+              {data.funnel.map((f: any) => (
+                <div key={f.name} style={{ fontSize: 13 }}>
+                  <span style={{ color: "#c7d0e6", fontWeight: 700 }}>{f.count}</span>{" "}
+                  <span style={{ color: "#8b97b3" }}>{f.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Insights — what's converting (the moat readout) */}
         {data?.insights && (

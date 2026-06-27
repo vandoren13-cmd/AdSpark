@@ -7,6 +7,7 @@ import { COL } from "@/lib/collections";
 import { sendEmail } from "@/lib/email";
 import { newLeadEmail, leadAckEmail } from "@/lib/emails";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
+import { logEvent } from "@/lib/events";
 
 export const runtime = "nodejs";
 
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
       sendEmail({ to: lead.email, subject: ack.subject, html: ack.html }),
     ]);
 
+    await logEvent("lead_created", { uid, props: { tier: lead.tier, source: lead.source } });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Failed to submit." }, { status: 500 });

@@ -10,6 +10,7 @@ import { sendEmail } from "@/lib/email";
 import { welcomeEmail } from "@/lib/emails";
 import { complianceRecord } from "@/lib/compliance";
 import { rateLimit } from "@/lib/ratelimit";
+import { logEvent } from "@/lib/events";
 import { COL } from "@/lib/collections";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -86,7 +87,9 @@ export async function POST(req: NextRequest) {
         const email = u.email || (await adminAuth().getUser(uid)).email;
         if (email) { const w = welcomeEmail(); await sendEmail({ to: email, subject: w.subject, html: w.html, idempotencyKey: `welcome:${uid}` }); }
       } catch { /* */ }
+      await logEvent("signup", { uid });
     }
+    await logEvent("generation_created", { uid, props: { platform: brief.platform, plan: plan.id } });
 
     return NextResponse.json({
       ok: true, id: genRef.id, adSet: responseSet,
