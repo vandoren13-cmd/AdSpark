@@ -13,6 +13,8 @@ export default function GeneratorPage() {
   const { user, loading, logout, getToken } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ brand: "", product: "", goal: "Drive conversions", platform: "Instagram", tone: "Bold & punchy", audience: "" });
+  const [importUrl, setImportUrl] = useState("");
+  const [importing, setImporting] = useState(false);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [result, setResult] = useState<AdSet | null>(null);
@@ -31,6 +33,26 @@ export default function GeneratorPage() {
     } catch { /* */ }
   }
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+
+  async function importFromUrl() {
+    if (!importUrl.trim()) { setErr("Paste a product or landing-page URL to import."); return; }
+    setImporting(true); setErr(null);
+    try {
+      const t = await getToken();
+      const r = await fetch("/api/scrape", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` }, body: JSON.stringify({ url: importUrl }) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Couldn't import that URL");
+      setForm(f => ({
+        ...f,
+        brand: j.brief.brand || f.brand,
+        product: j.brief.product || f.product,
+        audience: j.brief.audience || f.audience,
+        tone: j.brief.tone || f.tone,
+        goal: j.brief.goal || f.goal,
+      }));
+    } catch (e: any) { setErr(e.message); }
+    finally { setImporting(false); }
+  }
 
   async function generate() {
     if (!form.product.trim()) { setErr("Describe your product or offer."); return; }
@@ -67,6 +89,13 @@ export default function GeneratorPage() {
         {/* Brief form */}
         <div className="card" style={{ padding: 18 }}>
           <h2 style={{ fontSize: 16, margin: "0 0 14px" }}>Campaign brief</h2>
+          <div style={{ marginBottom: 14, padding: 12, background: "#0a0e1c", border: "1px solid #1c2238", borderRadius: 10 }}>
+            <label style={label}>Import from a URL</label>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input className="in" value={importUrl} onChange={e => setImportUrl(e.target.value)} placeholder="Paste a product or store URL…" onKeyDown={e => { if (e.key === "Enter") importFromUrl(); }} />
+              <button className="btn-ghost btn" onClick={importFromUrl} disabled={importing} style={{ padding: "0 14px", fontSize: 13, whiteSpace: "nowrap" }}>{importing ? "…" : "Import"}</button>
+            </div>
+          </div>
           <div style={{ marginBottom: 12 }}><label style={label}>Brand</label><input className="in" value={form.brand} onChange={e => set("brand", e.target.value)} placeholder="e.g. Lumen Skincare" /></div>
           <div style={{ marginBottom: 12 }}><label style={label}>Product / offer *</label><textarea className="in" rows={3} value={form.product} onChange={e => set("product", e.target.value)} placeholder="What you're advertising — the product, offer, key benefits…" style={{ resize: "vertical" }} /></div>
           <div style={{ marginBottom: 12 }}><label style={label}>Audience</label><input className="in" value={form.audience} onChange={e => set("audience", e.target.value)} placeholder="e.g. women 25-40 into clean beauty" /></div>
