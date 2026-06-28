@@ -24,6 +24,7 @@ export default function GeneratorPage() {
   const [videoKind, setVideoKind] = useState<"avatar" | "product">("avatar");
   const [video, setVideo] = useState<{ status: string; url?: string } | null>(null);
   const [vbusy, setVbusy] = useState(false);
+  const [enhancing, setEnhancing] = useState<number | null>(null);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) refreshMe(); }, [user]); // eslint-disable-line
@@ -90,6 +91,19 @@ export default function GeneratorPage() {
       throw new Error("Still rendering — it'll appear under your videos shortly.");
     } catch (e: any) { setErr(e.message); }
     finally { setVbusy(false); }
+  }
+
+  async function enhanceImg(i: number) {
+    if (!result) return;
+    setEnhancing(i); setErr(null);
+    try {
+      const t = await getToken();
+      const r = await fetch("/api/enhance", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` }, body: JSON.stringify({ imageUrl: result.images[i] }) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Couldn't enhance");
+      setResult(prev => prev ? { ...prev, images: prev.images.map((s, idx) => idx === i ? j.url : s) } : prev);
+    } catch (e: any) { setErr(e.message); }
+    finally { setEnhancing(null); }
   }
 
   if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
@@ -209,7 +223,10 @@ export default function GeneratorPage() {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={src} alt={`Ad ${i + 1}`} style={{ width: "100%", borderRadius: 10, border: "1px solid #232a3e" }} />
                         <span style={{ position: "absolute", top: 8, left: 8, background: "#0a0e1ccc", color: "#c7d0e6", fontSize: 10, fontWeight: 700, padding: "3px 7px", borderRadius: 6, border: "1px solid #2c3450" }}>✦ AI-generated</span>
-                        <a href={src} download={`adspark-${i + 1}.png`} className="btn" style={{ position: "absolute", bottom: 8, right: 8, padding: "6px 10px", fontSize: 12 }}>⬇</a>
+                        <div style={{ position: "absolute", bottom: 8, right: 8, display: "flex", gap: 6 }}>
+                          <button onClick={() => enhanceImg(i)} disabled={enhancing === i} className="btn-ghost btn" style={{ padding: "6px 9px", fontSize: 12, background: "#0a0e1ccc" }} title="AI enhance / upscale">{enhancing === i ? "…" : "✨"}</button>
+                          <a href={src} download={`adspark-${i + 1}.png`} className="btn" style={{ padding: "6px 10px", fontSize: 12 }}>⬇</a>
+                        </div>
                       </div>
                     ))}
                   </div>
