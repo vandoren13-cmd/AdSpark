@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
       ok: true,
       plan: { id: plan.id, name: plan.name, quota: plan.quota, priceUsd: plan.priceUsd },
       used, remaining: Math.max(0, plan.quota - used),
+      serviceStatus: u.serviceStatus || "none",
       history,
     });
   } catch (e: any) {

@@ -36,6 +36,8 @@ export interface UserDoc {
   subStatus?: string | null;
   // access
   admin?: boolean;         // operator access to /admin
+  // full-suite (done-for-you) opt-in — self-serve stays primary; this is the background switch
+  serviceStatus?: "none" | "requested" | "active";
   createdAt: number;
   updatedAt: number;
 }

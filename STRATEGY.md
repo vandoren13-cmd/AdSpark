@@ -1,11 +1,18 @@
 # AdSpark AI — Strategy
 
-**Decision (June 2026): Model C, anchored on A.**
-AdSpark is a **done-for-you, AI-powered ad service** (A). A self-serve generation tool
-is the **top of the funnel** (C) — a lead magnet that proves competence and upsells into
-the managed service. We are not a $19/mo tool competing in the commoditizing creative-tool
-lane; that lane is a "death sentence" (free platform tools above, $19 apps below). The tool
-is our shop window and internal production engine; the **service** is the business.
+**Decision (updated June 2026): self-serve-first; full suite as an opt-in, observable option.**
+AdSpark leads with the **self-serve product** — a complete creative studio (platform-native
+copy, AI images, **AI video**, paste-a-URL brief import, one-click image enhancer) that stands
+on its own. The **done-for-you "full suite"** (managed, end-to-end ad service) is no longer the
+headline pitch: it's an **option users switch on from their account** ("Turn it on →"), it runs
+in the **background**, and stays **observable** via the client `/portal`. Self-serve is the front
+door and the growth engine; the full suite is the high-margin upsell for those who'd rather not DIY.
+
+> Earlier framing was "C anchored on A" (service-led, tool as funnel). Now that the self-serve
+> product is genuinely deep — video included — we lead with it and make the service the selectable
+> background upgrade, not the anchor. Mechanics: `serviceStatus` on the user (none → requested →
+> active), set via `/api/service-request` from the account page; operator works the lead in `/admin`
+> and the client observes progress in `/portal`.
 
 Full reasoning: see the research dossier (AI Advertising Landscape). This file is the
 operating decision derived from it.

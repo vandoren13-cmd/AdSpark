@@ -11,6 +11,7 @@ export default function AccountPage() {
   const [err, setErr] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [billingBusy, setBillingBusy] = useState(false);
+  const [serviceBusy, setServiceBusy] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
@@ -51,6 +52,19 @@ export default function AccountPage() {
       setErr(j.error || "Could not open billing portal.");
     } catch (e: any) { setErr(e.message); }
     finally { setBillingBusy(false); }
+  }
+
+  async function requestService() {
+    setServiceBusy(true); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/service-request", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({}) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Couldn't submit request.");
+      setNotice("✅ Done-for-you requested — we'll reach out within one business day. Track it in your portal.");
+      await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setServiceBusy(false); }
   }
 
   if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
@@ -119,14 +133,37 @@ export default function AccountPage() {
           <span style={{ fontSize: 12, color: "#6b7690" }}>🔒 Secure checkout & billing by Stripe.</span>
         </div>
 
-        {/* Done-for-you upsell */}
+        {/* Full suite (done-for-you) — opt-in switch, observable status */}
         <div className="card" style={{ padding: 18, marginBottom: 28, border: "1.5px solid #2c3450", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 14, background: "linear-gradient(135deg,#0d1120,#10142a)" }}>
           <div style={{ minWidth: 240, flex: "1 1 320px" }}>
-            <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#7c5cff", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Done-for-you</div>
-            <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Want us to run your ads for you?</div>
-            <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>Flat monthly price, no % of ad spend, no surprises. We build the creative, launch, and report — you never touch the account.</div>
+            <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#7c5cff", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Full suite · done-for-you</div>
+            {me?.serviceStatus === "active" ? (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>✓ Done-for-you is active</div>
+                <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>We're running your ads end-to-end. Track campaigns & reports in your portal.</div>
+              </>
+            ) : me?.serviceStatus === "requested" ? (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>✓ Requested — we'll be in touch</div>
+                <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>We'll reach out within one business day. You stay in self-serve meanwhile; track status in your portal.</div>
+              </>
+            ) : (
+              <>
+                <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Want us to run your ads instead?</div>
+                <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>Switch on the full suite — we build, launch, and report end-to-end. Flat price, no % of ad spend. You keep self-serve until then.</div>
+              </>
+            )}
           </div>
-          <a href="/done-for-you" className="btn" style={{ padding: "11px 18px", fontSize: 14, whiteSpace: "nowrap" }}>See managed plans →</a>
+          <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap" }}>
+            {(me?.serviceStatus === "requested" || me?.serviceStatus === "active") ? (
+              <a href="/portal" className="btn" style={{ padding: "11px 18px", fontSize: 14, whiteSpace: "nowrap" }}>Open portal →</a>
+            ) : (
+              <>
+                <a href="/done-for-you" className="btn-ghost btn" style={{ padding: "11px 16px", fontSize: 14, whiteSpace: "nowrap" }}>See plans</a>
+                <button onClick={requestService} disabled={serviceBusy} className="btn" style={{ padding: "11px 18px", fontSize: 14, whiteSpace: "nowrap" }}>{serviceBusy ? "…" : "Turn it on →"}</button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* History */}

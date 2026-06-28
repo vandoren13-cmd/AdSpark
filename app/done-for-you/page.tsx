@@ -31,8 +31,8 @@ export default function DoneForYou() {
     <main>
       <PageView name="done-for-you" />
       {/* Nav */}
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", maxWidth: 1100, margin: "0 auto" }}>
-        <a href="/" style={{ textDecoration: "none", fontWeight: 900, fontSize: 20 }}><span style={grad}>AdSpark AI</span></a>
+      <header className="nav-wrap" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", maxWidth: 1100, margin: "0 auto" }}>
+        <a href="/" style={{ textDecoration: "none", fontWeight: 900, fontSize: 20 }}><span style={grad} className="grad-animate">AdSpark AI</span></a>
         <div style={{ display: "flex", gap: 10 }}>
           <a href="/login" className="btn-ghost btn" style={{ padding: "8px 14px" }}>Sign in</a>
           <a href="#apply" className="btn" style={{ padding: "8px 16px" }}>Apply</a>
@@ -40,12 +40,12 @@ export default function DoneForYou() {
       </header>
 
       {/* Hero */}
-      <section style={{ maxWidth: 800, margin: "0 auto", padding: "56px 22px 32px", textAlign: "center" }}>
-        <div style={{ fontSize: 12, letterSpacing: 2, color: "#8b97b3", textTransform: "uppercase", marginBottom: 14 }}>Done-for-you ad management</div>
-        <h1 style={{ fontSize: 42, lineHeight: 1.12, margin: "0 0 16px", fontWeight: 900 }}>
-          We run your ads <span style={grad}>end-to-end</span>. You never touch the account.
+      <section style={{ maxWidth: 800, margin: "0 auto", padding: "clamp(36px,8vw,56px) 22px 32px", textAlign: "center" }}>
+        <div className="anim anim-1" style={{ fontSize: 12, letterSpacing: 2, color: "#8b97b3", textTransform: "uppercase", marginBottom: 14 }}>Done-for-you ad management</div>
+        <h1 className="anim anim-2" style={{ fontSize: "clamp(30px,6.5vw,44px)", lineHeight: 1.12, margin: "0 0 16px", fontWeight: 900 }}>
+          We run your ads <span style={grad} className="grad-animate">end-to-end</span>. You never touch the account.
         </h1>
-        <p style={{ fontSize: 17, color: "#9aa6c2", lineHeight: 1.6, maxWidth: 640, margin: "0 auto 10px" }}>
+        <p className="anim anim-3" style={{ fontSize: "clamp(15px,2.4vw,18px)", color: "#9aa6c2", lineHeight: 1.6, maxWidth: 640, margin: "0 auto 10px" }}>
           AI-built creative, human strategy, weekly reporting. One flat monthly price —
           <b style={{ color: "#c7d0e6" }}> no percentage of your ad spend, no surprises.</b>
         </p>

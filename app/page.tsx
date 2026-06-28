@@ -2,78 +2,68 @@ import React from "react";
 import { PLAN_LIST } from "@/lib/plans";
 import { PageView } from "@/lib/PageView";
 
-const grad = { background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } as React.CSSProperties;
+const grad = { background: "linear-gradient(135deg,#7c5cff,#4f8cff,#7c5cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } as React.CSSProperties;
 
 export default function Landing() {
   return (
     <main>
       <PageView name="home" />
       {/* Nav */}
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", maxWidth: 1100, margin: "0 auto" }}>
-        <div style={{ fontWeight: 900, fontSize: 20 }}><span style={grad}>AdSpark AI</span></div>
-        <div style={{ display: "flex", gap: 10 }}>
+      <header className="nav-wrap" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ fontWeight: 900, fontSize: 20 }}><span style={grad} className="grad-animate">AdSpark AI</span></div>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <a href="/done-for-you" className="btn-ghost btn hide-sm" style={{ padding: "8px 14px" }}>Done-for-you</a>
           <a href="/login" className="btn-ghost btn" style={{ padding: "8px 14px" }}>Sign in</a>
           <a href="/login" className="btn" style={{ padding: "8px 16px" }}>Start free</a>
         </div>
       </header>
 
       {/* Hero */}
-      <section style={{ maxWidth: 820, margin: "0 auto", padding: "64px 22px 40px", textAlign: "center" }}>
-        <div style={{ fontSize: 12, letterSpacing: 2, color: "#8b97b3", textTransform: "uppercase", marginBottom: 14 }}>AI ad creative · in seconds</div>
-        <h1 style={{ fontSize: 46, lineHeight: 1.1, margin: "0 0 16px", fontWeight: 900 }}>
-          Scroll-stopping ads, <span style={grad}>generated for every platform</span>
+      <section style={{ maxWidth: 840, margin: "0 auto", padding: "clamp(40px,9vw,72px) 22px 40px", textAlign: "center" }}>
+        <div className="anim anim-1" style={{ fontSize: 12, letterSpacing: 2, color: "#8b97b3", textTransform: "uppercase", marginBottom: 14 }}>AI ad creative · in seconds</div>
+        <h1 className="anim anim-2" style={{ fontSize: "clamp(32px,7vw,52px)", lineHeight: 1.08, margin: "0 0 16px", fontWeight: 900 }}>
+          Scroll-stopping ads,<br /><span style={grad} className="grad-animate">generated for every platform</span>
         </h1>
-        <p style={{ fontSize: 17, color: "#9aa6c2", lineHeight: 1.6, maxWidth: 620, margin: "0 auto 26px" }}>
-          Describe your product once. AdSpark writes platform-native ad copy, captions, hashtags and CTAs — and generates matching ad images — for Instagram, TikTok, Facebook, LinkedIn and more.
+        <p className="anim anim-3" style={{ fontSize: "clamp(15px,2.4vw,18px)", color: "#9aa6c2", lineHeight: 1.6, maxWidth: 640, margin: "0 auto 26px" }}>
+          Describe your product — or paste a URL — and AdSpark generates platform-native copy, AI images, and <b style={{ color: "#c7d0e6" }}>AI video ads</b> in seconds. Built for Instagram, TikTok, Facebook, LinkedIn and more.
         </p>
-        <a href="/login" className="btn" style={{ padding: "14px 26px", fontSize: 16 }}>Start with 5 free generations →</a>
-        <div style={{ fontSize: 12.5, color: "#6b7690", marginTop: 12 }}>No credit card required.</div>
-      </section>
-
-      {/* Done-for-you anchor band */}
-      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "10px 22px 44px" }}>
-        <div className="card" style={{ padding: 26, border: "1.5px solid #2c3450", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, background: "linear-gradient(135deg,#0d1120,#10142a)" }}>
-          <div style={{ minWidth: 260, flex: "1 1 360px" }}>
-            <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#7c5cff", textTransform: "uppercase", fontWeight: 800, marginBottom: 8 }}>Don't want to DIY?</div>
-            <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>Let us run your ads end-to-end.</div>
-            <div style={{ fontSize: 14, color: "#9aa6c2", lineHeight: 1.55 }}>
-              Done-for-you AI ad management — flat monthly price, <b style={{ color: "#c7d0e6" }}>no % of ad spend, no surprises.</b> You never touch the account.
-            </div>
-          </div>
-          <a href="/done-for-you" className="btn" style={{ padding: "13px 22px", fontSize: 15, whiteSpace: "nowrap" }}>See done-for-you plans →</a>
+        <div className="anim anim-4">
+          <a href="/login" className="btn shine-cta" style={{ padding: "14px 28px", fontSize: 16 }}>Start with 5 free generations →</a>
+          <div style={{ fontSize: 12.5, color: "#6b7690", marginTop: 12 }}>No credit card required · copy + images + video</div>
         </div>
       </section>
 
       {/* Features */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "10px 22px 50px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
         {[
-          ["⚡", "Copy that converts", "Headlines, primary text, captions, hashtags and CTAs — written by a top-tier AI copywriter, tuned to each platform."],
-          ["🎨", "AI ad images", "On-brand, scroll-stopping visuals generated alongside the copy. Download and ship."],
-          ["📈", "Built for volume", "Spin up multiple variations per campaign and A/B test what works. Quotas that scale with you."],
-        ].map(([icon, t, d]) => (
-          <div key={t} className="card" style={{ padding: 20 }}>
-            <div style={{ fontSize: 26, marginBottom: 10 }}>{icon}</div>
+          ["⚡", "Copy, images & video", "Headlines, captions, hashtags and CTAs from a top-tier AI copywriter — plus matching AI images and avatar/UGC or cinematic video ads."],
+          ["🔗", "Paste a URL → ads", "Drop in a product or store link and AdSpark builds the brief and the creative automatically. Enhance any image in one click."],
+          ["📈", "Built for volume", "Spin up variations per campaign, A/B test what works, and ship to Meta, TikTok and Google. Plans that scale with you."],
+        ].map(([icon, t, d], i) => (
+          <div key={t} className={`card hover-pop anim anim-${i + 2}`} style={{ padding: 22 }}>
+            <div className="float" style={{ fontSize: 28, marginBottom: 10, display: "inline-block" }}>{icon}</div>
             <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 6 }}>{t}</div>
             <div style={{ fontSize: 13.5, color: "#9aa6c2", lineHeight: 1.55 }}>{d}</div>
           </div>
         ))}
       </section>
 
-      {/* Pricing */}
-      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 22px 70px" }}>
-        <h2 style={{ textAlign: "center", fontSize: 30, fontWeight: 900, margin: "0 0 8px" }}>Prefer to run ads yourself?</h2>
-        <p style={{ textAlign: "center", color: "#9aa6c2", marginTop: 0, marginBottom: 30 }}>Self-serve plans for DIY creators. Start free, upgrade when you're ready — or <a href="/done-for-you" style={{ color: "#7c5cff" }}>let us run them for you</a>.</p>
+      {/* Pricing (self-serve — primary) */}
+      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "20px 22px 30px" }}>
+        <h2 className="anim anim-1" style={{ textAlign: "center", fontSize: "clamp(24px,5vw,32px)", fontWeight: 900, margin: "0 0 8px" }}>Simple, scalable pricing</h2>
+        <p className="anim anim-2" style={{ textAlign: "center", color: "#9aa6c2", marginTop: 0, marginBottom: 30 }}>Start free. Upgrade anytime. Every plan includes copy, images and video.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
-          {PLAN_LIST.map(p => (
-            <div key={p.id} className="card" style={{ padding: 20, border: p.id === "pro" ? "1.5px solid #7c5cff" : undefined, position: "relative" }}>
-              {p.id === "pro" && <div style={{ position: "absolute", top: -10, left: 20, background: "linear-gradient(135deg,#7c5cff,#4f8cff)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 20 }}>POPULAR</div>}
+          {PLAN_LIST.map((p, i) => (
+            <div key={p.id} className={`card hover-pop anim anim-${i + 2}`} style={{ padding: 22, border: p.id === "pro" ? "1.5px solid #7c5cff" : undefined, position: "relative", boxShadow: p.id === "pro" ? "0 0 40px #7c5cff22" : undefined }}>
+              {p.id === "pro" && <div style={{ position: "absolute", top: -10, left: 22, background: "linear-gradient(135deg,#7c5cff,#4f8cff)", color: "#fff", fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 20 }}>MOST POPULAR</div>}
               <div style={{ fontSize: 15, fontWeight: 800 }}>{p.name}</div>
-              <div style={{ fontSize: 30, fontWeight: 900, margin: "6px 0" }}>${p.priceUsd}<span style={{ fontSize: 13, color: "#8b97b3", fontWeight: 600 }}>{p.priceUsd ? "/mo" : ""}</span></div>
+              <div style={{ fontSize: 32, fontWeight: 900, margin: "6px 0" }}>${p.priceUsd}<span style={{ fontSize: 13, color: "#8b97b3", fontWeight: 600 }}>{p.priceUsd ? "/mo" : ""}</span></div>
               <div style={{ fontSize: 12.5, color: "#9aa6c2", minHeight: 34, lineHeight: 1.4 }}>{p.blurb}</div>
               <ul style={{ listStyle: "none", padding: 0, margin: "12px 0", fontSize: 13, color: "#c7d0e6", display: "flex", flexDirection: "column", gap: 6 }}>
                 <li>✓ {p.quota.toLocaleString()} generations / mo</li>
                 <li>✓ {p.variants} copy variations each</li>
                 <li>✓ {p.images} AI image{p.images > 1 ? "s" : ""} each</li>
+                <li>✓ {p.videos} AI video{p.videos > 1 ? "s" : ""} / mo</li>
               </ul>
               <a href="/login" className="btn" style={{ width: "100%", background: p.id === "pro" ? undefined : "#1a2138" }}>{p.priceUsd ? "Choose" : "Start free"}</a>
             </div>
@@ -81,17 +71,27 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Done-for-you — secondary, observable option */}
+      <section style={{ maxWidth: 1000, margin: "0 auto", padding: "0 22px 50px" }}>
+        <div className="card anim anim-1" style={{ padding: "16px 20px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div style={{ fontSize: 13.5, color: "#9aa6c2" }}>
+            <b style={{ color: "#c7d0e6" }}>Rather not DIY?</b> Switch on the full suite and we run your ads end-to-end — flat price, no spend fees. You can turn it on right from your account.
+          </div>
+          <a href="/done-for-you" className="btn-ghost btn" style={{ padding: "9px 16px", fontSize: 13.5, whiteSpace: "nowrap" }}>Explore done-for-you →</a>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "10px 22px 60px" }}>
-        <h2 style={{ textAlign: "center", fontSize: 28, fontWeight: 900, margin: "0 0 24px" }}>Questions</h2>
+        <h2 className="anim anim-1" style={{ textAlign: "center", fontSize: "clamp(22px,5vw,28px)", fontWeight: 900, margin: "0 0 24px" }}>Questions</h2>
         {[
-          ["Do you charge a percentage of my ad spend?", "No. Self-serve plans are flat monthly. Done-for-you is a flat retainer, completely separate from your ad budget — no spend fees, ever. (That's the #1 complaint about tools like Zeely; we don't do it.)"],
-          ["How is this different from a $19 AI tool?", "Tools hand you raw creative and leave the hard part — strategy, launching, measuring — to you. AdSpark's done-for-you service runs the whole thing end-to-end, and our performance data compounds into knowing what actually converts in your niche."],
-          ["Can you actually run the ads for me?", "Yes. With done-for-you, we build the creative, launch the campaigns, and send you a plain-English report every week. You never touch the ad account."],
-          ["Which platforms do you support?", "Meta (Facebook/Instagram), Google, and TikTok, with native integrations — copy via Claude, images via the latest image models."],
+          ["What can I make on a self-serve plan?", "Platform-native ad copy, AI images, and AI video ads (avatar/UGC or cinematic) — plus paste-a-URL brief import and one-click image enhancement. Everything downloads ready to ship."],
+          ["Do you charge a percentage of my ad spend?", "Never. Self-serve plans are flat monthly. (A spend fee is the #1 complaint about tools like Zeely — we don't do it.)"],
+          ["Can you run the ads for me instead?", "Yes — the full done-for-you suite is an option you can switch on from your account. We build, launch and report end-to-end, flat price, and you track it all in your portal."],
+          ["Which platforms do you support?", "Meta (Facebook/Instagram), TikTok and Google — native integrations. Copy via Claude, images and video via the latest models."],
           ["Is the AI creative compliant?", "Every asset is labeled AI-generated and carries a compliance record, built to meet current FTC and platform (Meta/TikTok/Google) disclosure requirements."],
-        ].map(([q, a]) => (
-          <div key={q} className="card" style={{ padding: 18, marginBottom: 10 }}>
+        ].map(([q, a], i) => (
+          <div key={q} className={`card anim anim-${Math.min(i + 1, 6)}`} style={{ padding: 18, marginBottom: 10 }}>
             <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 6 }}>{q}</div>
             <div style={{ fontSize: 13.5, color: "#9aa6c2", lineHeight: 1.6 }}>{a}</div>
           </div>
