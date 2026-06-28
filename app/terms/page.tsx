@@ -15,7 +15,7 @@ export default function Terms() {
       <div style={{ background: "#1a1407", border: "1px solid #4a3a12", color: "#e8c878", borderRadius: 10, padding: 12, fontSize: 12.5, marginBottom: 20 }}>⚠️ Template for launch — review with legal counsel before relying on it.</div>
 
       <h2 style={h}>1. Agreement</h2>
-      <p style={p}>By accessing or using AdSpark AI (the "Service"), you agree to these Terms. If you do not agree, do not use the Service. AdSpark AI is operated by AdSpark AI ("we", "us"), a VanDoren-EMPIRE company.</p>
+      <p style={p}>By accessing or using AdSpark AI (the "Service"), you agree to these Terms. If you do not agree, do not use the Service. AdSpark AI is operated by AdSpark AI ("we", "us").</p>
 
       <h2 style={h}>2. The Service</h2>
       <p style={p}>AdSpark provides AI-generated advertising creative (copy and images) on a self-serve basis, and an optional done-for-you ad-management service. AI output may contain errors or inaccuracies; you are responsible for reviewing all creative before publishing it.</p>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { SERVICE_TIERS } from "@/lib/plans";
 import { PageView } from "@/lib/PageView";
+import { Logo } from "@/lib/Logo";
 
 const grad = { background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } as React.CSSProperties;
 const label: React.CSSProperties = { fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 5, display: "block" };
@@ -29,10 +30,11 @@ export default function DoneForYou() {
 
   return (
     <main>
+      <div className="aurora" aria-hidden="true" />
       <PageView name="done-for-you" />
       {/* Nav */}
-      <header className="nav-wrap" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", maxWidth: 1100, margin: "0 auto" }}>
-        <a href="/" style={{ textDecoration: "none", fontWeight: 900, fontSize: 20 }}><span style={grad} className="grad-animate">AdSpark AI</span></a>
+      <header className="nav-wrap glass" style={{ position: "sticky", top: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 22px", borderLeft: 0, borderRight: 0, borderTop: 0 }}>
+        <a href="/" style={{ textDecoration: "none" }}><Logo size={19} /></a>
         <div style={{ display: "flex", gap: 10 }}>
           <a href="/login" className="btn-ghost btn" style={{ padding: "8px 14px" }}>Sign in</a>
           <a href="#apply" className="btn" style={{ padding: "8px 16px" }}>Apply</a>
@@ -135,7 +137,7 @@ export default function DoneForYou() {
       </section>
 
       <footer style={{ textAlign: "center", padding: "30px 20px", color: "#5b6680", fontSize: 12.5, borderTop: "1px solid #161c2e" }}>
-        © AdSpark AI · A VanDoren-EMPIRE company
+        © 2026 AdSpark AI · AI ad creative, on autopilot.
       </footer>
     </main>
   );

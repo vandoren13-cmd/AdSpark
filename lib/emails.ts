@@ -9,7 +9,7 @@ const shell = (heading: string, body: string, cta?: { label: string; href: strin
     <h1 style="font-size:20px;margin:0 0 12px">${heading}</h1>
     <div style="font-size:14px;line-height:1.6;color:#c7d0e6">${body}</div>
     ${cta ? `<a href="${cta.href}" style="display:inline-block;margin-top:20px;background:linear-gradient(135deg,#7c5cff,#4f8cff);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:10px">${cta.label}</a>` : ""}
-    <div style="margin-top:26px;border-top:1px solid #1c2238;padding-top:14px;font-size:11px;color:#5b6680">AdSpark AI · A VanDoren-EMPIRE company</div>
+    <div style="margin-top:26px;border-top:1px solid #1c2238;padding-top:14px;font-size:11px;color:#5b6680">AdSpark AI · AI ad creative, on autopilot</div>
   </div>
 </div>`;
 

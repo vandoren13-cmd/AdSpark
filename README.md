@@ -48,4 +48,4 @@ Follow **[RUNBOOK.md](RUNBOOK.md)** top to bottom.
 - Image generation is behind a **model-router** (`IMAGE_ENGINE`) — `gpt-image-1` sunsets
   2026-10-23; swapping engines is a config change.
 
-© AdSpark AI · A VanDoren-EMPIRE company
+© 2026 AdSpark AI · AI ad creative, on autopilot.
