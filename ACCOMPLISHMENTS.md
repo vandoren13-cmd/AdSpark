@@ -105,12 +105,31 @@ platform developer apps, domain, legal review — all documented in [RUNBOOK.md]
 
 ---
 
-## Best-in-class research conducted (3 parallel agents, ~80 sources)
+## 12. Zeely feature-parity push (video + ingestion)
+After comparing AdSpark to Zeely's live product, closed the four product gaps:
+- **🎬 AI video** ([lib/video.ts](lib/video.ts), [/api/video](app/api/video/route.ts) +
+  [poll](app/api/video/[id]/route.ts)): avatar/UGC/talking-head via **HeyGen** and cinematic
+  product video via **fal.ai** (Veo/Kling/Seedance), async job→poll, result re-hosted to Storage,
+  per-plan video quota, **🎬 Video** mode in the generator. (Built from API research.)
+- **🔗 URL → brief ingestion** ([lib/scrape.ts](lib/scrape.ts), [/api/scrape](app/api/scrape/route.ts)):
+  paste a product/Shopify URL → SSRF-guarded scrape → Claude-cleaned brief auto-fills the form.
+- **📝 AI ad-script generator** ([lib/ai.ts](lib/ai.ts) `generateVideoScript`): hook/scenes/
+  voiceover/CTA; powers avatar video and stands alone.
+- **✨ AI image enhancer** ([lib/enhance.ts](lib/enhance.ts), [/api/enhance](app/api/enhance/route.ts)):
+  one-click upscale via fal.ai.
+
+We now match Zeely's product surface (copy, static, **video**, avatars, URL-to-ad, enhancer)
+while keeping the edges Zeely lacks (done-for-you service, flat/no-spend-fee pricing,
+multi-platform native launch, the performance-data moat, portal + auto reports, compliance).
+
+## Best-in-class research conducted (4 parallel agents, ~110 sources)
 1. **Google Ads + TikTok APIs** — exact OAuth, endpoints, micros/code-envelope gotchas → built the
    adapters directly from it.
 2. **Transactional email (2026)** — Resend recommended; HTTP shape + SPF/DKIM/DMARC → built the email layer.
 3. **AI-disclosure rules (FTC/Meta/TikTok/Google)** — IPTC/C2PA provenance, $53,088/violation,
    guardrails → built the compliance layer + policy.
+4. **Video generation APIs (HeyGen + fal.ai)** — async create/poll, model selection, cost →
+   built the video router + image enhancer.
 
 ## Commit log (this session)
 ```

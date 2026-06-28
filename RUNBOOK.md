@@ -61,6 +61,17 @@ be entered **manually** in /admin.
 - **TikTok:** `TIKTOK_ACCESS_TOKEN`, `TIKTOK_ADVERTISER_ID`.
 Smoke-test each with one campaign in /admin (it's created PAUSED) before relying on it.
 
+## 7b. Video + image enhancement (optional)
+Until configured, the generator's **🎬 Video** mode and the **✨ enhance** button return a
+clear "not configured" message; everything else works.
+- **Avatar / UGC / talking-head video — HeyGen:** create an account, get an API key, and pick a
+  default avatar + voice (`GET /v2/avatars`, `/v2/voices`). Set `HEYGEN_API_KEY`,
+  `HEYGEN_AVATAR_ID`, `HEYGEN_VOICE_ID`.
+- **Cinematic product video + image enhancer — fal.ai:** get a key → `FAL_KEY`. Optional:
+  `VIDEO_MODEL` (default `fal-ai/veo3/fast`), `IMAGE_ENHANCE_MODEL` (default `fal-ai/clarity-upscaler`).
+- Cost guardrails are built in via per-plan video quota (`plans.ts` → `videos`); an 8s clip ≈ $0.80,
+  so tune the quotas before opening the floodgates.
+
 ## 8. Weekly client reports (automation)
 Set `CRON_SECRET` to a long random string (Vercel + `.env.local`). `vercel.json` already schedules
 `/api/cron/weekly-reports` for Mondays 14:00 UTC; Vercel Cron authenticates with `CRON_SECRET`.

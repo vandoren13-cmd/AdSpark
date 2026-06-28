@@ -13,8 +13,8 @@ A done-for-you ad **service** is the business; the self-serve tool is the **funn
 in **[STRATEGY.md](STRATEGY.md)**.
 
 ## What's here
-- **Funnel:** landing, self-serve generator (copy + AI images, auto-tagged, quota-enforced),
-  Stripe billing, accounts.
+- **Funnel:** landing, self-serve generator (copy + AI images + **AI video** (avatar/UGC + cinematic),
+  **URL→brief import**, **image enhancer**, auto-tagged, quota-enforced), Stripe billing, accounts.
 - **Service:** `/done-for-you` + lead capture, `/admin` operator console (leads → clients →
   campaigns → results → reports), native ad-platform deployment, client `/portal`, automated
   weekly reports.
