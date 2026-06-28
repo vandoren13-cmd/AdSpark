@@ -148,3 +148,42 @@ export async function generateAdSet(brief: AdBrief, variants: number, images: nu
   const imgs = images > 0 ? await generateAdImages(copy.imagePrompt, images, quality) : [];
   return { ...copy, images: imgs };
 }
+
+// ── Ad SCRIPTS (Claude) — for UGC / talking-head / product video ──────────────
+export interface AdScriptScene { visual: string; voiceover: string; onScreenText: string; durationSec: number; }
+export interface AdScript { hook: string; scenes: AdScriptScene[]; cta: string; voiceover: string; caption: string; }
+
+export async function generateVideoScript(brief: AdBrief, seconds = 20): Promise<AdScript> {
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  const msg = await anthropic.messages.create({
+    model: "claude-opus-4-8",
+    max_tokens: 1500,
+    system: "You are an elite short-form video ad scriptwriter (UGC + direct response). Write tight, scroll-stopping scripts with a 2-second hook. Respond ONLY with valid JSON, no markdown.",
+    messages: [{
+      role: "user",
+      content: `Write a ~${seconds}s ${brief.platform} video ad script.
+Brand: ${brief.brand}
+Product/offer: ${brief.product}
+Goal: ${brief.goal}
+Tone: ${brief.tone}
+Audience: ${brief.audience}
+
+Return JSON exactly:
+{
+  "hook": "the spoken first-2-seconds hook",
+  "scenes": [ { "visual": "what's on screen", "voiceover": "spoken line", "onScreenText": "on-screen caption", "durationSec": 3 } ],
+  "cta": "the spoken call to action",
+  "voiceover": "the FULL voiceover as one continuous paragraph (ready for TTS / an AI avatar)",
+  "caption": "a ready-to-paste social caption"
+}`,
+    }],
+  });
+  const text = msg.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
+  const j = parseJSON<AdScript>(text, { hook: "", scenes: [], cta: "", voiceover: "", caption: "" });
+  j.scenes = (Array.isArray(j.scenes) ? j.scenes : []).map(s => ({ visual: String(s?.visual || ""), voiceover: String(s?.voiceover || ""), onScreenText: String(s?.onScreenText || ""), durationSec: Number(s?.durationSec) || 3 }));
+  j.hook = String(j.hook || "");
+  j.cta = String(j.cta || "");
+  j.voiceover = String(j.voiceover || j.scenes.map(s => s.voiceover).filter(Boolean).join(" "));
+  j.caption = String(j.caption || "");
+  return j;
+}

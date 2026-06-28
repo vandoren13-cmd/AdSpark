@@ -20,6 +20,10 @@ export default function GeneratorPage() {
   const [result, setResult] = useState<AdSet | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [planName, setPlanName] = useState("");
+  const [mode, setMode] = useState<"creative" | "video">("creative");
+  const [videoKind, setVideoKind] = useState<"avatar" | "product">("avatar");
+  const [video, setVideo] = useState<{ status: string; url?: string } | null>(null);
+  const [vbusy, setVbusy] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) refreshMe(); }, [user]); // eslint-disable-line
@@ -67,6 +71,27 @@ export default function GeneratorPage() {
     finally { setBusy(false); }
   }
 
+  async function generateVideo() {
+    if (!form.product.trim()) { setErr("Describe your product or offer."); return; }
+    setVbusy(true); setErr(null); setVideo(null);
+    try {
+      const t = await getToken();
+      const r = await fetch("/api/video", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` }, body: JSON.stringify({ ...form, kind: videoKind }) });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || "Video generation failed");
+      const id = j.id;
+      for (let i = 0; i < 75; i++) {
+        await new Promise(res => setTimeout(res, 4000));
+        const pr = await fetch(`/api/video/${id}`, { headers: { Authorization: `Bearer ${t}` } });
+        const pj = await pr.json();
+        if (pj.status === "ready") { setVideo({ status: "ready", url: pj.url }); return; }
+        if (pj.status === "failed") throw new Error(pj.error || "Video generation failed");
+      }
+      throw new Error("Still rendering — it'll appear under your videos shortly.");
+    } catch (e: any) { setErr(e.message); }
+    finally { setVbusy(false); }
+  }
+
   if (loading || !user) return <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", color: "#8b97b3" }}>Loading…</main>;
 
   const label: React.CSSProperties = { fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 5, display: "block" };
@@ -85,7 +110,16 @@ export default function GeneratorPage() {
         </div>
       </header>
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "22px 18px 60px", display: "grid", gridTemplateColumns: "380px 1fr", gap: 22, alignItems: "start" }}>
+      {/* Mode toggle */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 18px 0", display: "flex", gap: 8 }}>
+        {(["creative", "video"] as const).map(m => (
+          <button key={m} onClick={() => setMode(m)} className="btn" style={{ padding: "8px 16px", fontSize: 13, background: mode === m ? undefined : "#1a2138" }}>
+            {m === "creative" ? "Copy + Images" : "🎬 Video"}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 18px 60px", display: "grid", gridTemplateColumns: "380px 1fr", gap: 22, alignItems: "start" }}>
         {/* Brief form */}
         <div className="card" style={{ padding: 18 }}>
           <h2 style={{ fontSize: 16, margin: "0 0 14px" }}>Campaign brief</h2>
@@ -105,23 +139,63 @@ export default function GeneratorPage() {
           </div>
           <div style={{ marginBottom: 14 }}><label style={label}>Goal</label><input className="in" value={form.goal} onChange={e => set("goal", e.target.value)} placeholder="e.g. drive signups, sell the product" /></div>
           {err && <div style={{ color: "#ff6b6b", fontSize: 12.5, marginBottom: 10 }}>{err}</div>}
-          <button className="btn" onClick={generate} disabled={busy || remaining === 0} style={{ width: "100%" }}>
-            {busy ? "⚡ Generating…" : remaining === 0 ? "No generations left — upgrade" : "⚡ Generate ad set"}
-          </button>
-          {remaining === 0 && <a href="/account" style={{ display: "block", textAlign: "center", marginTop: 10, color: "#7c5cff", fontSize: 13 }}>Upgrade your plan →</a>}
+          {mode === "creative" ? (
+            <>
+              <button className="btn" onClick={generate} disabled={busy || remaining === 0} style={{ width: "100%" }}>
+                {busy ? "⚡ Generating…" : remaining === 0 ? "No generations left — upgrade" : "⚡ Generate ad set"}
+              </button>
+              {remaining === 0 && <a href="/account" style={{ display: "block", textAlign: "center", marginTop: 10, color: "#7c5cff", fontSize: 13 }}>Upgrade your plan →</a>}
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: 10 }}>
+                <label style={label}>Video type</label>
+                <select className="in" value={videoKind} onChange={e => setVideoKind(e.target.value as any)}>
+                  <option value="avatar">Avatar / UGC (talking-head)</option>
+                  <option value="product">Product / cinematic</option>
+                </select>
+              </div>
+              <button className="btn" onClick={generateVideo} disabled={vbusy} style={{ width: "100%" }}>
+                {vbusy ? "🎬 Rendering… (~1–3 min)" : "🎬 Generate video"}
+              </button>
+            </>
+          )}
         </div>
 
         {/* Results */}
         <div>
-          {!result && !busy && (
+          {/* Video mode */}
+          {mode === "video" && (
+            (!video && !vbusy) ? (
+              <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🎬</div>
+                <div style={{ fontSize: 15, color: "#c7d0e6", fontWeight: 700 }}>Your AI video ad appears here</div>
+                <div style={{ fontSize: 13, marginTop: 6 }}>Pick a video type, fill the brief, and hit Generate. Avatar/UGC and cinematic product videos render in ~1–3 min.</div>
+              </div>
+            ) : vbusy ? (
+              <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>🎬 Rendering your video… this can take 1–3 minutes. Keep this tab open.</div>
+            ) : video?.url ? (
+              <div className="card" style={{ padding: 16 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+                  <div style={{ fontSize: 12, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6 }}>AI video</div>
+                  <div style={{ fontSize: 11, color: "#6b7690" }}>Labeled AI-generated for platform compliance</div>
+                </div>
+                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                <video src={video.url} controls style={{ width: "100%", borderRadius: 10, border: "1px solid #232a3e" }} />
+                <a href={video.url} download="adspark-video.mp4" className="btn" style={{ marginTop: 10, width: "100%" }}>⬇ Download video</a>
+              </div>
+            ) : null
+          )}
+
+          {mode === "creative" && !result && !busy && (
             <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>✨</div>
               <div style={{ fontSize: 15, color: "#c7d0e6", fontWeight: 700 }}>Your ad creative appears here</div>
               <div style={{ fontSize: 13, marginTop: 6 }}>Fill the brief and hit Generate — you'll get copy variations, captions, hashtags, and AI images.</div>
             </div>
           )}
-          {busy && <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>⚡ Crafting your ad set… copy + images can take ~20–40s.</div>}
-          {result && (
+          {mode === "creative" && busy && <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>⚡ Crafting your ad set… copy + images can take ~20–40s.</div>}
+          {mode === "creative" && result && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {result.images?.length > 0 && (
                 <div className="card" style={{ padding: 16 }}>

@@ -18,6 +18,7 @@ export const COL = {
   results: "adspark_results",
   reports: "adspark_reports",
   invoices: "adspark_invoices",
+  videos: "adspark_videos",
   events: "adspark_events",
   ratelimits: "adspark_ratelimits",
 } as const;
@@ -150,6 +151,23 @@ export interface ReportDoc {
   url?: string | null;
   sentAt?: number | null;
   createdAt: number;
+}
+
+export type VideoStatus = "processing" | "ready" | "failed";
+
+export interface VideoDoc {
+  uid: string;
+  kind: "avatar" | "product";
+  brief?: Brief;
+  script?: any;            // AdScript (for avatar/UGC)
+  prompt?: string;         // cinematic prompt
+  provider: string;        // "heygen" | "fal"
+  jobId: string;
+  status: VideoStatus;
+  url?: string | null;     // persisted Storage URL when ready
+  error?: string | null;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type InvoiceKind = "subscription" | "retainer";

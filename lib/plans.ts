@@ -16,15 +16,16 @@ export interface Plan {
   quota: number;           // generations per month (a generation = a set of variations + image(s))
   variants: number;        // ad-copy variations produced per generation
   images: number;          // AI images produced per generation
+  videos: number;          // AI videos per month (avatar/UGC or cinematic) — separate quota
   imageQuality: ImageQuality;
   stripePriceEnv?: string; // env var holding the Stripe price id
   blurb: string;
 }
 
 export const PLANS: Record<PlanId, Plan> = {
-  free:    { id: "free",    name: "Free",    priceUsd: 0,  quota: 5,   variants: 3, images: 1, imageQuality: "medium", blurb: "Try it — 5 generations, no card." },
-  starter: { id: "starter", name: "Starter", priceUsd: 15, quota: 50,  variants: 3, images: 1, imageQuality: "medium", stripePriceEnv: "STRIPE_PRICE_STARTER", blurb: "Solo creators & small campaigns." },
-  pro:     { id: "pro",     name: "Pro",     priceUsd: 49, quota: 200, variants: 5, images: 2, imageQuality: "medium", stripePriceEnv: "STRIPE_PRICE_PRO",     blurb: "Growing brands running ads weekly." },
+  free:    { id: "free",    name: "Free",    priceUsd: 0,  quota: 5,   variants: 3, images: 1, videos: 1,  imageQuality: "medium", blurb: "Try it — 5 generations, no card." },
+  starter: { id: "starter", name: "Starter", priceUsd: 15, quota: 50,  variants: 3, images: 1, videos: 5,  imageQuality: "medium", stripePriceEnv: "STRIPE_PRICE_STARTER", blurb: "Solo creators & small campaigns." },
+  pro:     { id: "pro",     name: "Pro",     priceUsd: 49, quota: 200, variants: 5, images: 2, videos: 30, imageQuality: "medium", stripePriceEnv: "STRIPE_PRICE_PRO",     blurb: "Growing brands running ads weekly." },
 };
 
 export const PLAN_LIST = Object.values(PLANS);
