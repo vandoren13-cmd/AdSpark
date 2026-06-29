@@ -1,4 +1,4 @@
-// app/api/admin/creatives/route.ts — the creative library. Admin-gated.
+// app/api/admin/creatives/route.ts - the creative library. Admin-gated.
 // Promote a generation into a tracked creative (inherits its vertical/hook/format/offer
 // tags), or create one manually. Logging results against a creative is what attributes
 // performance to what converts (see /api/admin/results + /api/admin/overview insights).

@@ -33,7 +33,7 @@ html { scroll-behavior: smooth; }
 @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 @keyframes shine { 0% { transform: translateX(-130%); } 55%, 100% { transform: translateX(130%); } }
 
-/* animated gradient text — pair with an inline gradient + clip style */
+/* animated gradient text - pair with an inline gradient + clip style */
 .grad-animate { background-size: 220% auto; animation: gradShift 6s ease-in-out infinite; }
 .float { animation: floatY 6.5s ease-in-out infinite; }
 

@@ -3,8 +3,8 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthProvider";
 
 const SITE = process.env.NEXT_PUBLIC_APP_URL || "https://adspark.ai";
-const TITLE = "AdSpark AI — AI ad creative in seconds";
-const DESC = "Generate platform-native ad copy, captions, hashtags, CTAs and AI images for every campaign — or let us run your ads end-to-end. Flat price, no spend fees.";
+const TITLE = "AdSpark AI - AI ad creative in seconds";
+const DESC = "Generate platform-native ad copy, captions, hashtags, CTAs and AI images for every campaign - or let us run your ads end-to-end. Flat price, no spend fees.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),

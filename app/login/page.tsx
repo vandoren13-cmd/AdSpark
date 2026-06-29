@@ -34,7 +34,7 @@ export default function LoginPage() {
           <span style={{ background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</span>
         </a>
         <h1 style={{ fontSize: 20, margin: "16px 0 4px" }}>{mode === "in" ? "Welcome back" : "Create your account"}</h1>
-        <p style={{ color: "#8b97b3", fontSize: 13, marginTop: 0 }}>{mode === "in" ? "Sign in to generate ads." : "Start with 5 free generations — no card."}</p>
+        <p style={{ color: "#8b97b3", fontSize: 13, marginTop: 0 }}>{mode === "in" ? "Sign in to generate ads." : "Start with 5 free generations - no card."}</p>
 
         <button className="btn" onClick={google} disabled={busy} style={{ width: "100%", background: "#fff", color: "#1a1a2e", marginTop: 14 }}>
           Continue with Google

@@ -1,4 +1,4 @@
-// lib/stripe.ts — SERVER ONLY. Stripe client + plan↔price mapping.
+// lib/stripe.ts - SERVER ONLY. Stripe client + plan↔price mapping.
 // Lazily constructed so the app builds/runs without billing configured; handlers
 // surface a clean "billing not configured" error until STRIPE_* env is set.
 import Stripe from "stripe";

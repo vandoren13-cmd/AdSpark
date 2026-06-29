@@ -1,4 +1,4 @@
-// lib/storage.ts — SERVER ONLY. Persists generated images to Firebase Storage and
+// lib/storage.ts - SERVER ONLY. Persists generated images to Firebase Storage and
 // returns a stable, tokenized download URL (survives page refresh; powers history,
 // the client portal, and the creative library). The token bypasses Storage rules,
 // so storage.rules can stay deny-all for direct client access.

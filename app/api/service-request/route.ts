@@ -1,4 +1,4 @@
-// app/api/service-request/route.ts — a self-serve user opts into the full suite (done-for-you).
+// app/api/service-request/route.ts - a self-serve user opts into the full suite (done-for-you).
 // Self-serve stays the primary product; this flips a background switch (serviceStatus) and
 // drops a lead into the operator console. The user observes status here + in /portal.
 import { NextRequest, NextResponse } from "next/server";

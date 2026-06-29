@@ -1,4 +1,4 @@
-// app/api/portal/route.ts — open the Stripe Billing Portal so a customer can manage
+// app/api/portal/route.ts - open the Stripe Billing Portal so a customer can manage
 // or cancel their subscription and update payment details.
 import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest, adminDb } from "@/lib/firebaseAdmin";
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
 
     const u: any = (await adminDb().collection(COL.users).doc(uid).get()).data() || {};
     if (!u.stripeCustomerId) {
-      return NextResponse.json({ ok: false, error: "No billing account yet — upgrade to a paid plan first." }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "No billing account yet - upgrade to a paid plan first." }, { status: 400 });
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";

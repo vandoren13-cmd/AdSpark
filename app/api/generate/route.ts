@@ -1,4 +1,4 @@
-// app/api/generate/route.ts — the AdSpark generation endpoint.
+// app/api/generate/route.ts - the AdSpark generation endpoint.
 // Verifies the user → enforces monthly quota → generates copy + images → saves
 // history → decrements quota. Returns the ad set + remaining quota.
 import { NextRequest, NextResponse } from "next/server";
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     // Burst protection (plan quota is monthly; this caps abuse/cost spikes per minute).
     const rl = await rateLimit(`gen:${uid}`, 20, 60);
-    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests — give it a moment and try again." }, { status: 429 });
+    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests - give it a moment and try again." }, { status: 429 });
 
     const db = adminDb();
     const userRef = db.collection(COL.users).doc(uid);
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const isNewUser = !snap.exists;
     const plan = planFor(u.plan);
 
-    // Monthly quota window — reset the counter when the period rolls over.
+    // Monthly quota window - reset the counter when the period rolls over.
     const pk = periodKey();
     const used = u.periodKey === pk ? (u.used || 0) : 0;
     if (used >= plan.quota) {
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     if (!brief.product.trim()) return NextResponse.json({ ok: false, error: "Describe your product/offer." }, { status: 400 });
 
     const adSet = await generateAdSet(brief, plan.variants, plan.images, plan.imageQuality);
-    if (!adSet.variations.length) return NextResponse.json({ ok: false, error: "Generation failed — please try again." }, { status: 502 });
+    if (!adSet.variations.length) return NextResponse.json({ ok: false, error: "Generation failed - please try again." }, { status: 502 });
 
     // Persist images to Firebase Storage so they survive refresh and power history,
     // the client portal, and the creative library. Falls back to the inline data URL

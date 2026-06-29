@@ -1,4 +1,4 @@
-// lib/platforms/index.ts — SERVER ONLY. One dispatcher over the native ad-platform
+// lib/platforms/index.ts - SERVER ONLY. One dispatcher over the native ad-platform
 // adapters (Meta, Google, TikTok) so routes don't branch per platform. Each adapter is
 // env-gated; platformReady() reports whether a platform can actually launch/report.
 import { metaReady, metaCreateCampaign, metaGetInsights } from "./meta";

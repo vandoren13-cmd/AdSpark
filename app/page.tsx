@@ -8,7 +8,7 @@ const grad = { background: "linear-gradient(135deg,#7c5cff,#4f8cff,#7c5cff)", We
 const PLATFORMS = ["Meta", "Instagram", "TikTok", "Facebook", "Google", "YouTube", "LinkedIn", "Pinterest"];
 const muted: React.CSSProperties = { color: "#9aa6c2" };
 
-// ── Mock product "media" (CSS/SVG — depicts the real product, no external assets) ──
+// ── Mock product "media" (CSS/SVG - depicts the real product, no external assets) ──
 function HeroMock() {
   return (
     <div className="gborder float" style={{ borderRadius: 18, padding: 1 }}>
@@ -63,7 +63,7 @@ function FeatureMock({ kind }: { kind: "studio" | "url" | "insights" }) {
       <div className="in" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#9aa6c2" }}><span style={{ color: "#7c5cff" }}>🔗</span> yourstore.com/product</div>
       <div style={{ textAlign: "center", color: "#7c5cff", fontSize: 18, margin: "8px 0" }}>↓</div>
       <div className="card" style={{ padding: 12 }}>
-        <div style={{ fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 7 }}>Brief — auto-filled</div>
+        <div style={{ fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 7 }}>Brief - auto-filled</div>
         <div className="shimmer-line" style={{ height: 8, marginBottom: 6 }} />
         <div className="shimmer-line" style={{ height: 8, width: "85%", marginBottom: 6 }} />
         <div className="shimmer-line" style={{ height: 8, width: "55%" }} />
@@ -106,12 +106,12 @@ export default function Landing() {
       {/* Hero */}
       <section style={{ maxWidth: 1120, margin: "0 auto", padding: "clamp(36px,7vw,72px) 22px 30px", display: "grid", gridTemplateColumns: "1.05fr .95fr", gap: 40, alignItems: "center" }}>
         <div>
-          <div className="anim anim-1 chip" style={{ marginBottom: 18 }}>✨ Copy · Images · Video — in seconds</div>
+          <div className="anim anim-1 chip" style={{ marginBottom: 18 }}>✨ Copy · Images · Video - in seconds</div>
           <h1 className="anim anim-2" style={{ fontSize: "clamp(34px,6vw,58px)", lineHeight: 1.05, margin: "0 0 18px", fontWeight: 900, letterSpacing: -0.5 }}>
             Scroll-stopping ads,<br /><span style={grad} className="grad-animate">on autopilot</span>
           </h1>
           <p className="anim anim-3" style={{ fontSize: "clamp(15px,2.2vw,18px)", color: "#9aa6c2", lineHeight: 1.6, maxWidth: 520, margin: "0 0 26px" }}>
-            Describe your product — or paste a URL — and AdSpark generates platform-native copy, AI images and <b style={{ color: "#c7d0e6" }}>AI video ads</b> instantly. Ship to Meta, TikTok and Google, or let us run it all for you.
+            Describe your product - or paste a URL - and AdSpark generates platform-native copy, AI images and <b style={{ color: "#c7d0e6" }}>AI video ads</b> instantly. Ship to Meta, TikTok and Google, or let us run it all for you.
           </p>
           <div className="anim anim-4" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a href="/login" className="btn shine-cta" style={{ padding: "14px 26px", fontSize: 16 }}>Start with 5 free generations →</a>
@@ -138,8 +138,8 @@ export default function Landing() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
           {[
             ["01", "Describe or paste a URL", "Tell AdSpark your product, or drop a link and it builds the brief for you."],
-            ["02", "Generate the creative", "Copy, images and video — multiple variations, auto-tagged, ready to ship."],
-            ["03", "Launch & learn", "Ship to Meta/TikTok/Google and see what actually converts — or let us run it."],
+            ["02", "Generate the creative", "Copy, images and video - multiple variations, auto-tagged, ready to ship."],
+            ["03", "Launch & learn", "Ship to Meta/TikTok/Google and see what actually converts - or let us run it."],
           ].map(([n, t, d], i) => (
             <Reveal key={n} delay={i * 90}>
               <div className="card hover-pop" style={{ padding: 22, height: "100%" }}>
@@ -155,7 +155,7 @@ export default function Landing() {
       {/* Feature showcase with media */}
       <section id="features" style={{ maxWidth: 1000, margin: "0 auto", padding: "30px 22px 20px", display: "flex", flexDirection: "column", gap: 26 }}>
         {([
-          ["studio", "A full creative studio", "Copy, AI images, and AI video — avatar/UGC or cinematic — generated together and labeled for compliance. Enhance any image in one click."],
+          ["studio", "A full creative studio", "Copy, AI images, and AI video - avatar/UGC or cinematic - generated together and labeled for compliance. Enhance any image in one click."],
           ["url", "Paste a URL → ready-to-run ads", "Drop in a product or store link and AdSpark scrapes it, writes the brief, and produces the creative automatically."],
           ["insights", "Know what actually converts", "Every asset is tagged by hook, format and vertical, so your results compound into a benchmark only you have."],
         ] as const).map(([kind, t, d], i) => (
@@ -207,11 +207,11 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Done-for-you — secondary, observable */}
+      {/* Done-for-you - secondary, observable */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "0 22px 40px" }}>
         <Reveal>
           <div className="card" style={{ padding: "16px 20px", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div style={{ fontSize: 13.5, ...muted }}><b style={{ color: "#c7d0e6" }}>Rather not DIY?</b> Switch on the full suite from your account and we run everything end-to-end — flat price, no spend fees.</div>
+            <div style={{ fontSize: 13.5, ...muted }}><b style={{ color: "#c7d0e6" }}>Rather not DIY?</b> Switch on the full suite from your account and we run everything end-to-end - flat price, no spend fees.</div>
             <a href="/done-for-you" className="btn-ghost btn" style={{ padding: "9px 16px", fontSize: 13.5, whiteSpace: "nowrap" }}>Explore done-for-you →</a>
           </div>
         </Reveal>
@@ -221,10 +221,10 @@ export default function Landing() {
       <section style={{ maxWidth: 760, margin: "0 auto", padding: "10px 22px 50px" }}>
         <Reveal><h2 style={{ textAlign: "center", fontSize: "clamp(22px,5vw,28px)", fontWeight: 900, margin: "0 0 24px" }}>Questions</h2></Reveal>
         {[
-          ["What can I make on a self-serve plan?", "Platform-native ad copy, AI images, and AI video ads (avatar/UGC or cinematic) — plus paste-a-URL brief import and one-click image enhancement. Everything downloads ready to ship."],
-          ["Do you charge a percentage of my ad spend?", "Never. Plans are flat monthly. (A spend fee is the #1 complaint about tools like Zeely — we don't do it.)"],
-          ["Can you run the ads for me instead?", "Yes — the full done-for-you suite is an option you switch on from your account. We build, launch and report end-to-end, and you track it all in your portal."],
-          ["Which platforms do you support?", "Meta (Facebook/Instagram), TikTok and Google — native integrations. Copy via Claude, images and video via the latest models."],
+          ["What can I make on a self-serve plan?", "Platform-native ad copy, AI images, and AI video ads (avatar/UGC or cinematic) - plus paste-a-URL brief import and one-click image enhancement. Everything downloads ready to ship."],
+          ["Do you charge a percentage of my ad spend?", "Never. Plans are flat monthly. (A spend fee is the #1 complaint about tools like Zeely - we don't do it.)"],
+          ["Can you run the ads for me instead?", "Yes - the full done-for-you suite is an option you switch on from your account. We build, launch and report end-to-end, and you track it all in your portal."],
+          ["Which platforms do you support?", "Meta (Facebook/Instagram), TikTok and Google - native integrations. Copy via Claude, images and video via the latest models."],
           ["Is the AI creative compliant?", "Every asset is labeled AI-generated and carries a compliance record, built to meet current FTC and platform disclosure requirements."],
         ].map(([q, a], i) => (
           <Reveal key={q} delay={i * 50}>

@@ -48,12 +48,11 @@ export default function DoneForYou() {
           We run your ads <span style={grad} className="grad-animate">end-to-end</span>. You never touch the account.
         </h1>
         <p className="anim anim-3" style={{ fontSize: "clamp(15px,2.4vw,18px)", color: "#9aa6c2", lineHeight: 1.6, maxWidth: 640, margin: "0 auto 10px" }}>
-          AI-built creative, human strategy, weekly reporting. One flat monthly price —
-          <b style={{ color: "#c7d0e6" }}> no percentage of your ad spend, no surprises.</b>
+          AI-built creative, human strategy, weekly reporting. One flat monthly price - <b style={{ color: "#c7d0e6" }}> no percentage of your ad spend, no surprises.</b>
         </p>
       </section>
 
-      {/* Trust band — the Zeely wedge */}
+      {/* Trust band - the Zeely wedge */}
       <section style={{ maxWidth: 1000, margin: "0 auto", padding: "0 22px 36px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14 }}>
         {[
           ["No spend fees", "Flat retainer, separate from your ad budget. We never take a cut of your spend."],
@@ -97,7 +96,7 @@ export default function DoneForYou() {
           {done ? (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>🎉</div>
-              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Got it — we'll be in touch.</div>
+              <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>Got it - we'll be in touch.</div>
               <div style={{ fontSize: 14, color: "#9aa6c2" }}>We'll review your details and reach out at <b style={{ color: "#c7d0e6" }}>{form.email}</b> within one business day with 3 ad concepts we'd test for you.</div>
             </div>
           ) : (
@@ -116,7 +115,7 @@ export default function DoneForYou() {
                 <div><label style={label}>Monthly ad spend</label>
                   <select className="in" value={form.monthlySpend} onChange={e => set("monthlySpend", e.target.value)}>
                     <option value="">Select…</option>
-                    <option>Under $500/mo</option><option>$500–$2K/mo</option><option>$2K–$8K/mo</option><option>$8K+/mo</option>
+                    <option>Under $500/mo</option><option>$500 - $2K/mo</option><option>$2K - $8K/mo</option><option>$8K+/mo</option>
                   </select>
                 </div>
                 <div><label style={label}>Interested in</label>

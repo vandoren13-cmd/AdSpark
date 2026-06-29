@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Privacy Policy" };
 
-// NOTE: Template privacy policy for launch — have counsel review and tailor to your
+// NOTE: Template privacy policy for launch - have counsel review and tailor to your
 // actual data practices and jurisdictions (GDPR/CCPA) before relying on it.
 export default function Privacy() {
   const h: React.CSSProperties = { fontSize: 18, fontWeight: 800, margin: "26px 0 8px" };
@@ -13,10 +13,10 @@ export default function Privacy() {
       <a href="/" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18, background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</a>
       <h1 style={{ fontSize: 30, fontWeight: 900, margin: "18px 0 4px" }}>Privacy Policy</h1>
       <div style={{ color: "#6b7690", fontSize: 12.5, marginBottom: 10 }}>Last updated: June 2026</div>
-      <div style={{ background: "#1a1407", border: "1px solid #4a3a12", color: "#e8c878", borderRadius: 10, padding: 12, fontSize: 12.5, marginBottom: 20 }}>⚠️ Template for launch — review with legal counsel and tailor to GDPR/CCPA before relying on it.</div>
+      <div style={{ background: "#1a1407", border: "1px solid #4a3a12", color: "#e8c878", borderRadius: 10, padding: 12, fontSize: 12.5, marginBottom: 20 }}>⚠️ Template for launch - review with legal counsel and tailor to GDPR/CCPA before relying on it.</div>
 
       <h2 style={h}>1. What we collect</h2>
-      <p style={p}>Account data (email, authentication identifiers via Firebase), the campaign briefs and content you submit, generated creative and its metadata, usage and quota data, and — for paid plans — billing data processed by Stripe (we do not store full card numbers). For done-for-you clients, we process the ad-account and performance data needed to run your campaigns.</p>
+      <p style={p}>Account data (email, authentication identifiers via Firebase), the campaign briefs and content you submit, generated creative and its metadata, usage and quota data, and - for paid plans - billing data processed by Stripe (we do not store full card numbers). For done-for-you clients, we process the ad-account and performance data needed to run your campaigns.</p>
 
       <h2 style={h}>2. How we use it</h2>
       <p style={p}>To provide and improve the Service: generate creative, enforce quotas, run and report on managed campaigns, process payments, send transactional email, and maintain aggregated, de-identified performance benchmarks. We do not sell your personal data.</p>

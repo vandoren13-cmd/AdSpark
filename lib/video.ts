@@ -1,4 +1,4 @@
-// lib/video.ts — SERVER ONLY. Pluggable video model-router (avatar + cinematic), async
+// lib/video.ts - SERVER ONLY. Pluggable video model-router (avatar + cinematic), async
 // job → poll, env-gated (no-op until keys set). Mirrors the image router in lib/ai.ts.
 //   • avatar / UGC / talking-head → HeyGen
 //   • product / cinematic (text→video, image→video) → fal.ai (Veo / Kling / Seedance)
@@ -56,7 +56,7 @@ const heygen: VideoEngine = {
   },
 };
 
-// ── fal.ai (product / cinematic — Veo / Kling / Seedance behind one queue API) ─
+// ── fal.ai (product / cinematic - Veo / Kling / Seedance behind one queue API) ─
 const fal: VideoEngine = {
   id: "fal",
   ready: () => !!process.env.FAL_KEY,
@@ -73,7 +73,7 @@ const fal: VideoEngine = {
     });
     if (!res.ok) throw new Error(`fal submit ${res.status}: ${(await res.text()).slice(0, 160)}`);
     const j = await res.json();
-    // fal's poll URL needs the model slug — pack it into the jobId to fit poll(jobId).
+    // fal's poll URL needs the model slug - pack it into the jobId to fit poll(jobId).
     return { jobId: `${model}::${j.request_id}` };
   },
   async poll(jobId) {

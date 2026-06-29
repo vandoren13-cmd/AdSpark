@@ -1,4 +1,4 @@
-// app/api/stripe/webhook/route.ts — Stripe → AdSpark sync. Verifies the signature
+// app/api/stripe/webhook/route.ts - Stripe → AdSpark sync. Verifies the signature
 // against STRIPE_WEBHOOK_SECRET, then mirrors subscription state onto the user doc
 // (plan / subStatus / ids). Point a Stripe webhook endpoint at /api/stripe/webhook
 // for: customer.subscription.created, .updated, .deleted.

@@ -1,4 +1,4 @@
-// app/api/admin/campaigns/route.ts — manage client campaigns. Admin-gated.
+// app/api/admin/campaigns/route.ts - manage client campaigns. Admin-gated.
 //   GET                                  → recent campaigns
 //   POST { clientId, name, platform?, objective?, dailyBudgetUsd?, goLive? }
 //        → create a campaign doc; if goLive + platform meta + Meta configured + the
@@ -49,13 +49,13 @@ export async function POST(req: NextRequest) {
 
     if (goLive) {
       if (!platformReady(platform)) {
-        warn = `Saved as draft — ${platform} isn't configured (add its API keys to go live).`;
+        warn = `Saved as draft - ${platform} isn't configured (add its API keys to go live).`;
       } else {
         const adAccount = client.adAccounts?.[platform] || (platform === "meta" ? process.env.META_AD_ACCOUNT_ID || "" : "");
         try {
           const r = await createCampaign(platform, adAccount, { name, objective });
           externalId = r.id; externalAccountId = r.accountId; status = "paused"; // created PAUSED for review
-        } catch (e: any) { warn = `Saved as draft — ${platform} launch failed: ${e.message}`; }
+        } catch (e: any) { warn = `Saved as draft - ${platform} launch failed: ${e.message}`; }
       }
     }
 

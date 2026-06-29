@@ -1,4 +1,4 @@
-// app/api/enhance/route.ts — upscale/enhance a generated image (Zeely "AI image enhancer").
+// app/api/enhance/route.ts - upscale/enhance a generated image (Zeely "AI image enhancer").
 import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest } from "@/lib/firebaseAdmin";
 import { enhanceReady, enhanceImage } from "@/lib/enhance";
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     if (!enhanceReady()) return NextResponse.json({ ok: false, error: "Image enhancer isn't configured yet (add FAL_KEY)." }, { status: 503 });
 
     const rl = await rateLimit(`enhance:${uid}`, 20, 60);
-    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests — give it a moment." }, { status: 429 });
+    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests - give it a moment." }, { status: 429 });
 
     const { imageUrl } = await req.json().catch(() => ({}));
     if (!imageUrl) return NextResponse.json({ ok: false, error: "imageUrl required." }, { status: 400 });

@@ -1,4 +1,4 @@
-// lib/ratelimit.ts — SERVER ONLY. Firestore-backed fixed-window rate limiter. Works across
+// lib/ratelimit.ts - SERVER ONLY. Firestore-backed fixed-window rate limiter. Works across
 // serverless instances (no Redis/dep). Fails OPEN on limiter error so a Firestore hiccup
 // never blocks legitimate traffic. Counter docs carry `exp` for optional Firestore TTL cleanup.
 import { adminDb } from "./firebaseAdmin";

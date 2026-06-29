@@ -1,14 +1,14 @@
-# AdSpark AI — Build Session Accomplishments
+# AdSpark AI - Build Session Accomplishments
 
 **Session date:** 2026-06-27
 **Outcome:** AdSpark went from a thin self-serve ad-copy generator to a complete, deployable,
-two-sided AI ad business — a self-serve funnel **and** a done-for-you managed-service back office,
+two-sided AI ad business - a self-serve funnel **and** a done-for-you managed-service back office,
 with a proprietary performance-data moat, native multi-platform ad integrations, billing, email,
 reporting, a client portal, compliance, security, and analytics.
 
 Everything below is **built, type-checked (`npm run build` green at every step), committed, and
-pushed to `main`** (`vandoren13-cmd/AdSpark`). What remains is human-only input — live API keys,
-platform developer apps, domain, legal review — all documented in [RUNBOOK.md](RUNBOOK.md).
+pushed to `main`** (`vandoren13-cmd/AdSpark`). What remains is human-only input - live API keys,
+platform developer apps, domain, legal review - all documented in [RUNBOOK.md](RUNBOOK.md).
 
 ---
 
@@ -16,7 +16,7 @@ platform developer apps, domain, legal review — all documented in [RUNBOOK.md]
 - Locked the business model to **"C anchored on A"**: a done-for-you ad **service** is the
   business; the self-serve tool is the **funnel/lead magnet**. ([STRATEGY.md](STRATEGY.md))
 - Positioning wedge against **Zeely.ai**: flat price, **no % of ad spend**, truly done-for-you,
-  no surprises — attacking Zeely's #1 complaint (billing/spend-fee) head-on.
+  no surprises - attacking Zeely's #1 complaint (billing/spend-fee) head-on.
 - Repriced the self-serve tiers to be **cost-modeled** (dropped the money-losing "Agency" quota
   tier; Free/Starter/Pro now carry healthy margins) and defined **service tiers**
   (Spark $997 / Blaze $1,997 / Inferno $3,500, flat retainers).
@@ -40,7 +40,7 @@ platform developer apps, domain, legal review — all documented in [RUNBOOK.md]
   collections (users, generations, leads, clients, campaigns, creatives, results, reports,
   invoices, events, ratelimits).
 - **Security rules**: deny-all client access to Firestore + Storage
-  ([firestore.rules](firestore.rules), [storage.rules](storage.rules)) — everything goes through
+  ([firestore.rules](firestore.rules), [storage.rules](storage.rules)) - everything goes through
   the Admin SDK. Firebase config ([firebase.json](firebase.json), [.firebaserc](.firebaserc)).
 - **Image persistence** ([lib/storage.ts](lib/storage.ts)): generated images upload to Firebase
   Storage with tokenized URLs (survive refresh; power history/portal/library).
@@ -51,7 +51,7 @@ platform developer apps, domain, legal review — all documented in [RUNBOOK.md]
   subscription checkout, self-service billing portal, signature-verified webhook that syncs
   plan/subscription state onto the user. Lazy/no-op until keys are set.
 
-## 5. Operator console (the back office) — `/admin`
+## 5. Operator console (the back office) - `/admin`
 - [app/admin/page.tsx](app/admin/page.tsx), gated by `ADMIN_EMAILS`/`admin` flag
   ([lib/admin.ts](lib/admin.ts)). One screen to run the whole business:
   - **Stats**: MRR, blended ROAS, new leads, clients, creatives, users, generations, events.
@@ -59,7 +59,7 @@ platform developer apps, domain, legal review — all documented in [RUNBOOK.md]
     **clients** (+ generate report), **client reports**, **campaigns** (create/go-live + sync/log
     results), **creatives library**, recent generations.
 
-## 6. The moat — performance database
+## 6. The moat - performance database
 - **Auto-tagging** ([lib/ai.ts](lib/ai.ts)): every generation is classified by
   **vertical/hook/format/offer** in the *same* Claude call (zero extra cost).
 - **Creative library** ([/api/admin/creatives](app/api/admin/creatives/route.ts)) + **results
@@ -70,7 +70,7 @@ platform developer apps, domain, legal review — all documented in [RUNBOOK.md]
 ## 7. Native ad-platform integrations (built from scratch, no connectors)
 - **Meta** ([lib/platforms/meta.ts](lib/platforms/meta.ts)), **Google Ads**
   ([lib/platforms/google.ts](lib/platforms/google.ts)), **TikTok**
-  ([lib/platforms/tiktok.ts](lib/platforms/tiktok.ts)) — campaign create + insights, behind a
+  ([lib/platforms/tiktok.ts](lib/platforms/tiktok.ts)) - campaign create + insights, behind a
   single **dispatcher** ([lib/platforms/index.ts](lib/platforms/index.ts)). Each env-gated;
   campaigns launch PAUSED for review. Drafts/manual until keys added.
 
@@ -123,12 +123,12 @@ while keeping the edges Zeely lacks (done-for-you service, flat/no-spend-fee pri
 multi-platform native launch, the performance-data moat, portal + auto reports, compliance).
 
 ## Best-in-class research conducted (4 parallel agents, ~110 sources)
-1. **Google Ads + TikTok APIs** — exact OAuth, endpoints, micros/code-envelope gotchas → built the
+1. **Google Ads + TikTok APIs** - exact OAuth, endpoints, micros/code-envelope gotchas → built the
    adapters directly from it.
-2. **Transactional email (2026)** — Resend recommended; HTTP shape + SPF/DKIM/DMARC → built the email layer.
-3. **AI-disclosure rules (FTC/Meta/TikTok/Google)** — IPTC/C2PA provenance, $53,088/violation,
+2. **Transactional email (2026)** - Resend recommended; HTTP shape + SPF/DKIM/DMARC → built the email layer.
+3. **AI-disclosure rules (FTC/Meta/TikTok/Google)** - IPTC/C2PA provenance, $53,088/violation,
    guardrails → built the compliance layer + policy.
-4. **Video generation APIs (HeyGen + fal.ai)** — async create/poll, model selection, cost →
+4. **Video generation APIs (HeyGen + fal.ai)** - async create/poll, model selection, cost →
    built the video router + image enhancer.
 
 ## Commit log (this session)
@@ -165,6 +165,6 @@ webhook; confirm Anthropic/OpenAI billing; Resend domain + DNS; Meta/Google/TikT
 ## Recommended next moves (post-activation)
 1. Pick **one vertical** and tailor templates/benchmarks to it.
 2. Run your own ads to `/done-for-you` (your live demo + lead source).
-3. Land 1–3 service clients, run their ads, let the weekly-report + insights flywheel compound.
-4. Build the IPTC/C2PA auto-label embedding (needs an image lib + signing cert — see COMPLIANCE.md).
-5. Publish a "State of [Niche] Ads" report from your insights data — moat *and* lead magnet.
+3. Land 1 - 3 service clients, run their ads, let the weekly-report + insights flywheel compound.
+4. Build the IPTC/C2PA auto-label embedding (needs an image lib + signing cert - see COMPLIANCE.md).
+5. Publish a "State of [Niche] Ads" report from your insights data - moat *and* lead magnet.

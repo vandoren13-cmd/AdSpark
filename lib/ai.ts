@@ -1,6 +1,6 @@
-// lib/ai.ts — SERVER ONLY. The AdSpark generation engine.
-//   • Ad COPY  → Claude (claude-opus-4-8) — superior creative/direct-response writing.
-//   • Ad IMAGES → a pluggable model-router (default: OpenAI gpt-image-1) — returns base64 PNGs.
+// lib/ai.ts - SERVER ONLY. The AdSpark generation engine.
+//   • Ad COPY  → Claude (claude-opus-4-8) - superior creative/direct-response writing.
+//   • Ad IMAGES → a pluggable model-router (default: OpenAI gpt-image-1) - returns base64 PNGs.
 import Anthropic from "@anthropic-ai/sdk";
 import type { ImageQuality } from "@/lib/plans";
 
@@ -21,7 +21,7 @@ export interface AdVariation {
 }
 // The moat: every generation is auto-tagged so results can be attributed to what
 // actually converts (by vertical / hook / format / offer). Produced in the same
-// Claude call as the copy — zero extra cost or latency.
+// Claude call as the copy - zero extra cost or latency.
 export interface AdTags {
   vertical: string;  // niche, e.g. "skincare", "b2b saas", "home services"
   hook: string;      // dominant angle, e.g. "problem-solution", "social-proof", "urgency"
@@ -47,7 +47,7 @@ export async function generateAdCopy(brief: AdBrief, variants: number): Promise<
   const msg = await anthropic.messages.create({
     model: "claude-opus-4-8",
     max_tokens: 2600,
-    system: "You are an elite direct-response advertising copywriter and creative director. You write scroll-stopping, platform-native ad copy that converts — specific, benefit-led, no fluff, no clichés. Respond ONLY with valid JSON, no markdown.",
+    system: "You are an elite direct-response advertising copywriter and creative director. You write scroll-stopping, platform-native ad copy that converts - specific, benefit-led, no fluff, no clichés. Respond ONLY with valid JSON, no markdown.",
     messages: [{
       role: "user",
       content: `Create ad creative for this campaign.
@@ -63,12 +63,12 @@ Return JSON exactly:
 {
   "variations": [ ${variants} distinct, ready-to-publish ad variations, each:
     { "headline": "punchy hook (platform-appropriate length)",
-      "primaryText": "the main ad body — persuasive, benefit-led, native to ${brief.platform}",
+      "primaryText": "the main ad body - persuasive, benefit-led, native to ${brief.platform}",
       "caption": "a ready-to-paste social caption with a hook + value + soft CTA",
       "hashtags": ["6-10 relevant, buyer-intent hashtags for ${brief.platform}"],
       "cta": "the call to action" } ],
   "creativeBrief": "a short creative brief for the design/visual direction (1-2 sentences)",
-  "imagePrompt": "a vivid, specific prompt for an eye-catching, on-brand AD IMAGE for ${brief.platform} — clean, high-contrast, scroll-stopping; NO real logos/trademarks, NO watermark",
+  "imagePrompt": "a vivid, specific prompt for an eye-catching, on-brand AD IMAGE for ${brief.platform} - clean, high-contrast, scroll-stopping; NO real logos/trademarks, NO watermark",
   "tags": {
     "vertical": "the business vertical/niche in 1-3 words (e.g. skincare, b2b saas, home services)",
     "hook": "the single dominant hook angle (one of: problem-solution, social-proof, urgency, curiosity, benefit, fear-of-missing-out, authority)",
@@ -93,7 +93,7 @@ Return JSON exactly:
   return j;
 }
 
-// ── Ad images — model-router ──────────────────────────────────────────────────
+// ── Ad images - model-router ──────────────────────────────────────────────────
 // Don't hard-wire one vendor: gpt-image-1 sunsets 2026-10-23. An engine produces a
 // single image (data URL) or null; register new vendors (FLUX/Ideogram/Bria) below and
 // select via the IMAGE_ENGINE env var. Swapping engines is then config, not a rewrite.
@@ -149,7 +149,7 @@ export async function generateAdSet(brief: AdBrief, variants: number, images: nu
   return { ...copy, images: imgs };
 }
 
-// ── Ad SCRIPTS (Claude) — for UGC / talking-head / product video ──────────────
+// ── Ad SCRIPTS (Claude) - for UGC / talking-head / product video ──────────────
 export interface AdScriptScene { visual: string; voiceover: string; onScreenText: string; durationSec: number; }
 export interface AdScript { hook: string; scenes: AdScriptScene[]; cta: string; voiceover: string; caption: string; }
 

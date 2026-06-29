@@ -1,4 +1,4 @@
-// app/api/report/[id]/route.ts — PUBLIC report fetch (no login). Token-gated: the caller
+// app/api/report/[id]/route.ts - PUBLIC report fetch (no login). Token-gated: the caller
 // must present the share token (?t=) that matches the report. Returns only client-safe fields.
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";

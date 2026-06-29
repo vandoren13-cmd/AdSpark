@@ -1,4 +1,4 @@
-// app/api/event/route.ts — PUBLIC client analytics ingest (page views, CTA clicks).
+// app/api/event/route.ts - PUBLIC client analytics ingest (page views, CTA clicks).
 // Rate-limited per IP; attaches uid when a token is present. Best-effort.
 import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest } from "@/lib/firebaseAdmin";

@@ -1,4 +1,4 @@
-// lib/platforms/google.ts — SERVER ONLY. Google Ads API adapter (campaign create + insights).
+// lib/platforms/google.ts - SERVER ONLY. Google Ads API adapter (campaign create + insights).
 // Env-gated; no-ops cleanly when unconfigured. Unlike Meta's static token, Google needs a
 // refresh-token → access-token exchange + a developer token + the MCC login-customer-id header.
 // Gotchas handled: money is in micros (÷1e6), metric values arrive as strings, searchStream
@@ -45,7 +45,7 @@ async function gads(cid: string, op: "mutate" | "searchStream", body: unknown) {
   return j;
 }
 
-// Google has no "objective" — map to advertisingChannelType.
+// Google has no "objective" - map to advertisingChannelType.
 const CHANNEL: Record<string, string> = { traffic: "SEARCH", sales: "SEARCH", leads: "SEARCH", awareness: "DISPLAY", engagement: "DISPLAY", app: "DISPLAY" };
 
 export async function googleCreateCampaign(adAccountId: string, opts: { name: string; objective?: string }): Promise<{ id: string; accountId: string }> {

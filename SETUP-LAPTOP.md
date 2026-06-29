@@ -1,12 +1,12 @@
 # Set up AdSpark on another machine (laptop / new PC)
 
-Everything is on GitHub except `.env.local` (gitignored — it holds your secrets). So you
+Everything is on GitHub except `.env.local` (gitignored - it holds your secrets). So you
 clone the repo, reinstall packages, and carry that one file over by hand.
 
 ## 1. Install prerequisites
-- **Git** — https://git-scm.com
-- **Node.js** — v20 or v22 LTS (anything 18+ works) — https://nodejs.org
-- **VS Code** — https://code.visualstudio.com
+- **Git** - https://git-scm.com
+- **Node.js** - v20 or v22 LTS (anything 18+ works) - https://nodejs.org
+- **VS Code** - https://code.visualstudio.com
 
 ## 2. Clone the repo
 ```bash
@@ -17,11 +17,11 @@ npm install
 The first `git` operation will open a browser to sign in to GitHub (Git Credential Manager).
 
 ## 3. Bring over `.env.local` (the only manual step)
-This file is **not** in GitHub on purpose — it contains live secrets (Firebase admin key,
+This file is **not** in GitHub on purpose - it contains live secrets (Firebase admin key,
 Anthropic/OpenAI keys, etc.).
 
 - On the original machine it lives at: `c:\Users\Patrick\Desktop\adspark-ai\.env.local`
-- Move it **securely** — USB drive, a cloud folder you control (OneDrive/Drive), or a
+- Move it **securely** - USB drive, a cloud folder you control (OneDrive/Drive), or a
   password manager. **Do not email it or paste it anywhere public.**
 - Drop it into the cloned `AdSpark` folder.
 
@@ -39,7 +39,7 @@ npm run build    # production build / type-check
 Install the **Claude Code** extension from the VS Code marketplace and sign in.
 The chat history doesn't sync between machines, but the full project context is captured in
 [ACCOMPLISHMENTS.md](ACCOMPLISHMENTS.md), [STRATEGY.md](STRATEGY.md), [RUNBOOK.md](RUNBOOK.md),
-and [COMPLIANCE.md](COMPLIANCE.md) — point a fresh session at those and it's caught up.
+and [COMPLIANCE.md](COMPLIANCE.md) - point a fresh session at those and it's caught up.
 
 ## 6. Keep machines in sync
 Whichever machine you work on:

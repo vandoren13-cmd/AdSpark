@@ -1,5 +1,5 @@
 "use client";
-// app/portal/page.tsx — managed-client portal. A done-for-you client signs in and sees
+// app/portal/page.tsx - managed-client portal. A done-for-you client signs in and sees
 // their campaigns, blended performance, and reports. Non-clients get a CTA to apply.
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,7 @@ export default function PortalPage() {
       <div style={{ maxWidth: 620, margin: "60px auto", padding: "0 20px", textAlign: "center" }}>
         <div style={{ fontSize: 40, marginBottom: 12 }}>📊</div>
         <h1 style={{ fontSize: 24, fontWeight: 900, margin: "0 0 8px" }}>No managed account yet</h1>
-        <p style={{ color: "#9aa6c2", fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>This portal is for done-for-you clients. Want us to run your ads end-to-end — flat price, no spend fees, you never touch the account?</p>
+        <p style={{ color: "#9aa6c2", fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>This portal is for done-for-you clients. Want us to run your ads end-to-end - flat price, no spend fees, you never touch the account?</p>
         <a href="/done-for-you" className="btn" style={{ padding: "12px 22px" }}>See done-for-you plans →</a>
       </div>
     </main>
@@ -75,7 +75,7 @@ export default function PortalPage() {
 
         <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Your campaigns</div>
         {(!data.campaigns || data.campaigns.length === 0) ? (
-          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>Your campaigns are being set up — they'll appear here shortly.</div>
+          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>Your campaigns are being set up - they'll appear here shortly.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
             {data.campaigns.map((cp: any, i: number) => (

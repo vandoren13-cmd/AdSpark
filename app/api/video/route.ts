@@ -1,4 +1,4 @@
-// app/api/video/route.ts — start an AI video ad (avatar/UGC via HeyGen, or cinematic via
+// app/api/video/route.ts - start an AI video ad (avatar/UGC via HeyGen, or cinematic via
 // fal). Async: creates the provider job, stores a "processing" doc, returns an id the client
 // polls at /api/video/[id]. Avatar videos auto-write a script from the brief.
 import { NextRequest, NextResponse } from "next/server";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (!uid) return NextResponse.json({ ok: false, error: "Please sign in." }, { status: 401 });
 
     const rl = await rateLimit(`video:${uid}`, 10, 60);
-    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests — give it a moment." }, { status: 429 });
+    if (!rl.ok) return NextResponse.json({ ok: false, error: "Too many requests - give it a moment." }, { status: 429 });
 
     const b = await req.json().catch(() => ({}));
     const kind: VideoKind = b.kind === "product" ? "product" : "avatar";
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       script = await generateVideoScript(brief, Number(b.seconds) || 20);
       opts = { script: script.voiceover || script.hook, aspectRatio: b.aspectRatio || "9:16" };
     } else {
-      prompt = String(b.prompt || "").trim() || `${brief.product}. ${brief.tone} ${brief.platform} product ad — cinematic, high-contrast, scroll-stopping. No on-screen text, no logos.`;
+      prompt = String(b.prompt || "").trim() || `${brief.product}. ${brief.tone} ${brief.platform} product ad - cinematic, high-contrast, scroll-stopping. No on-screen text, no logos.`;
       opts = { prompt, imageUrl: b.imageUrl || undefined, aspectRatio: b.aspectRatio || "9:16", duration: b.duration || "8s" };
     }
 

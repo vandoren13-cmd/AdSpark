@@ -1,4 +1,4 @@
-// app/api/lead/route.ts — captures "done-for-you" service inquiries (the funnel → service
+// app/api/lead/route.ts - captures "done-for-you" service inquiries (the funnel → service
 // hand-off). Writes to Firestore `adspark_leads`. Accepts anonymous or signed-in submissions
 // (if a valid token is present we attach the uid). No quota, no auth required.
 import { NextRequest, NextResponse } from "next/server";
@@ -15,7 +15,7 @@ const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export async function POST(req: NextRequest) {
   try {
-    const uid = await uidFromRequest(req); // null if not signed in — that's fine
+    const uid = await uidFromRequest(req); // null if not signed in - that's fine
 
     // Anti-spam: cap submissions per IP.
     const rl = await rateLimit(`lead:${clientIp(req)}`, 5, 3600);

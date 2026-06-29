@@ -1,4 +1,4 @@
-// lib/scrape.ts — SERVER ONLY. Fetch a product/landing URL and turn it into an ad brief
+// lib/scrape.ts - SERVER ONLY. Fetch a product/landing URL and turn it into an ad brief
 // (matches Zeely's "paste a URL" flow). Basic SSRF guard; OpenGraph/meta extraction with a
 // best-effort Claude cleanup pass (falls back to raw if no key).
 import Anthropic from "@anthropic-ai/sdk";
@@ -43,7 +43,7 @@ export async function scrapeProduct(raw: string): Promise<Scraped> {
 export async function briefFromScrape(s: Scraped): Promise<{ brand: string; product: string; audience: string; tone: string; goal: string }> {
   const fallback = {
     brand: s.siteName || "",
-    product: [s.title, s.description].filter(Boolean).join(" — ").slice(0, 800),
+    product: [s.title, s.description].filter(Boolean).join(" - ").slice(0, 800),
     audience: "", tone: "Bold & punchy", goal: "Drive conversions",
   };
   if (!process.env.ANTHROPIC_API_KEY) return fallback;

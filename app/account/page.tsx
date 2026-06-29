@@ -17,8 +17,8 @@ export default function AccountPage() {
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
   useEffect(() => {
     const c = new URLSearchParams(window.location.search).get("checkout");
-    if (c === "success") setNotice("✅ Subscription updated — your new plan is active.");
-    else if (c === "cancel") setNotice("Checkout canceled — no changes were made.");
+    if (c === "success") setNotice("✅ Subscription updated - your new plan is active.");
+    else if (c === "cancel") setNotice("Checkout canceled - no changes were made.");
   }, []);
 
   async function load() {
@@ -61,7 +61,7 @@ export default function AccountPage() {
       const r = await fetch("/api/service-request", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({}) });
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || "Couldn't submit request.");
-      setNotice("✅ Done-for-you requested — we'll reach out within one business day. Track it in your portal.");
+      setNotice("✅ Done-for-you requested - we'll reach out within one business day. Track it in your portal.");
       await load();
     } catch (e: any) { setErr(e.message); }
     finally { setServiceBusy(false); }
@@ -94,7 +94,7 @@ export default function AccountPage() {
         {/* Plan + usage */}
         <div className="card" style={{ padding: 18, marginBottom: 18 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <div><div style={{ fontSize: 12, color: "#8b97b3" }}>Current plan</div><div style={{ fontSize: 20, fontWeight: 800 }}>{me?.plan?.name || "—"}</div></div>
+            <div><div style={{ fontSize: 12, color: "#8b97b3" }}>Current plan</div><div style={{ fontSize: 20, fontWeight: 800 }}>{me?.plan?.name || " - "}</div></div>
             <div style={{ textAlign: "right" }}><div style={{ fontSize: 12, color: "#8b97b3" }}>This month</div><div style={{ fontSize: 20, fontWeight: 800 }}>{used} / {quota}</div></div>
           </div>
           <div style={{ height: 8, background: "#1a2138", borderRadius: 6, overflow: "hidden", marginTop: 12 }}>
@@ -133,7 +133,7 @@ export default function AccountPage() {
           <span style={{ fontSize: 12, color: "#6b7690" }}>🔒 Secure checkout & billing by Stripe.</span>
         </div>
 
-        {/* Full suite (done-for-you) — opt-in switch, observable status */}
+        {/* Full suite (done-for-you) - opt-in switch, observable status */}
         <div className="card" style={{ padding: 18, marginBottom: 28, border: "1.5px solid #2c3450", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 14, background: "linear-gradient(135deg,#0d1120,#10142a)" }}>
           <div style={{ minWidth: 240, flex: "1 1 320px" }}>
             <div style={{ fontSize: 12, letterSpacing: 1.5, color: "#7c5cff", textTransform: "uppercase", fontWeight: 800, marginBottom: 6 }}>Full suite · done-for-you</div>
@@ -144,13 +144,13 @@ export default function AccountPage() {
               </>
             ) : me?.serviceStatus === "requested" ? (
               <>
-                <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>✓ Requested — we'll be in touch</div>
+                <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>✓ Requested - we'll be in touch</div>
                 <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>We'll reach out within one business day. You stay in self-serve meanwhile; track status in your portal.</div>
               </>
             ) : (
               <>
                 <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 4 }}>Want us to run your ads instead?</div>
-                <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>Switch on the full suite — we build, launch, and report end-to-end. Flat price, no % of ad spend. You keep self-serve until then.</div>
+                <div style={{ fontSize: 13, color: "#9aa6c2", lineHeight: 1.5 }}>Switch on the full suite - we build, launch, and report end-to-end. Flat price, no % of ad spend. You keep self-serve until then.</div>
               </>
             )}
           </div>
@@ -169,13 +169,13 @@ export default function AccountPage() {
         {/* History */}
         <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Recent generations</div>
         {(!me?.history || me.history.length === 0) ? (
-          <div className="card" style={{ padding: 20, color: "#8b97b3", fontSize: 13 }}>No generations yet — <a href="/app" style={{ color: "#7c5cff" }}>create your first ad set</a>.</div>
+          <div className="card" style={{ padding: 20, color: "#8b97b3", fontSize: 13 }}>No generations yet - <a href="/app" style={{ color: "#7c5cff" }}>create your first ad set</a>.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {me.history.map((h: any) => (
               <div key={h.id} className="card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", gap: 10 }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.brief?.product || "—"}</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{h.brief?.product || " - "}</div>
                   <div style={{ fontSize: 11.5, color: "#8b97b3" }}>{h.brief?.platform} · {h.variations?.length || 0} variations · {h.imageCount || 0} images</div>
                 </div>
                 <div style={{ fontSize: 11, color: "#6b7690", flexShrink: 0 }}>{h.createdAt ? new Date(h.createdAt).toLocaleDateString() : ""}</div>

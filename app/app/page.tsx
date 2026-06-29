@@ -88,7 +88,7 @@ export default function GeneratorPage() {
         if (pj.status === "ready") { setVideo({ status: "ready", url: pj.url }); return; }
         if (pj.status === "failed") throw new Error(pj.error || "Video generation failed");
       }
-      throw new Error("Still rendering — it'll appear under your videos shortly.");
+      throw new Error("Still rendering - it'll appear under your videos shortly.");
     } catch (e: any) { setErr(e.message); }
     finally { setVbusy(false); }
   }
@@ -145,7 +145,7 @@ export default function GeneratorPage() {
             </div>
           </div>
           <div style={{ marginBottom: 12 }}><label style={label}>Brand</label><input className="in" value={form.brand} onChange={e => set("brand", e.target.value)} placeholder="e.g. Lumen Skincare" /></div>
-          <div style={{ marginBottom: 12 }}><label style={label}>Product / offer *</label><textarea className="in" rows={3} value={form.product} onChange={e => set("product", e.target.value)} placeholder="What you're advertising — the product, offer, key benefits…" style={{ resize: "vertical" }} /></div>
+          <div style={{ marginBottom: 12 }}><label style={label}>Product / offer *</label><textarea className="in" rows={3} value={form.product} onChange={e => set("product", e.target.value)} placeholder="What you're advertising - the product, offer, key benefits…" style={{ resize: "vertical" }} /></div>
           <div style={{ marginBottom: 12 }}><label style={label}>Audience</label><input className="in" value={form.audience} onChange={e => set("audience", e.target.value)} placeholder="e.g. women 25-40 into clean beauty" /></div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
             <div><label style={label}>Platform</label><select className="in" value={form.platform} onChange={e => set("platform", e.target.value)}>{PLATFORMS.map(p => <option key={p}>{p}</option>)}</select></div>
@@ -156,7 +156,7 @@ export default function GeneratorPage() {
           {mode === "creative" ? (
             <>
               <button className="btn" onClick={generate} disabled={busy || remaining === 0} style={{ width: "100%" }}>
-                {busy ? "⚡ Generating…" : remaining === 0 ? "No generations left — upgrade" : "⚡ Generate ad set"}
+                {busy ? "⚡ Generating…" : remaining === 0 ? "No generations left - upgrade" : "⚡ Generate ad set"}
               </button>
               {remaining === 0 && <a href="/account" style={{ display: "block", textAlign: "center", marginTop: 10, color: "#7c5cff", fontSize: 13 }}>Upgrade your plan →</a>}
             </>
@@ -170,7 +170,7 @@ export default function GeneratorPage() {
                 </select>
               </div>
               <button className="btn" onClick={generateVideo} disabled={vbusy} style={{ width: "100%" }}>
-                {vbusy ? "🎬 Rendering… (~1–3 min)" : "🎬 Generate video"}
+                {vbusy ? "🎬 Rendering… (~1 - 3 min)" : "🎬 Generate video"}
               </button>
             </>
           )}
@@ -184,10 +184,10 @@ export default function GeneratorPage() {
               <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>🎬</div>
                 <div style={{ fontSize: 15, color: "#c7d0e6", fontWeight: 700 }}>Your AI video ad appears here</div>
-                <div style={{ fontSize: 13, marginTop: 6 }}>Pick a video type, fill the brief, and hit Generate. Avatar/UGC and cinematic product videos render in ~1–3 min.</div>
+                <div style={{ fontSize: 13, marginTop: 6 }}>Pick a video type, fill the brief, and hit Generate. Avatar/UGC and cinematic product videos render in ~1 - 3 min.</div>
               </div>
             ) : vbusy ? (
-              <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>🎬 Rendering your video… this can take 1–3 minutes. Keep this tab open.</div>
+              <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>🎬 Rendering your video… this can take 1 - 3 minutes. Keep this tab open.</div>
             ) : video?.url ? (
               <div className="card" style={{ padding: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
@@ -205,10 +205,10 @@ export default function GeneratorPage() {
             <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>✨</div>
               <div style={{ fontSize: 15, color: "#c7d0e6", fontWeight: 700 }}>Your ad creative appears here</div>
-              <div style={{ fontSize: 13, marginTop: 6 }}>Fill the brief and hit Generate — you'll get copy variations, captions, hashtags, and AI images.</div>
+              <div style={{ fontSize: 13, marginTop: 6 }}>Fill the brief and hit Generate - you'll get copy variations, captions, hashtags, and AI images.</div>
             </div>
           )}
-          {mode === "creative" && busy && <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>⚡ Crafting your ad set… copy + images can take ~20–40s.</div>}
+          {mode === "creative" && busy && <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3" }}>⚡ Crafting your ad set… copy + images can take ~20 - 40s.</div>}
           {mode === "creative" && result && (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {result.images?.length > 0 && (

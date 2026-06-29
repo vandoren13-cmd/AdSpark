@@ -1,4 +1,4 @@
-// app/api/admin/reports/route.ts — client performance reports (the retention engine).
+// app/api/admin/reports/route.ts - client performance reports (the retention engine).
 // Admin-gated.
 //   GET                              → recent reports
 //   POST { clientId, email? }        → build a 30-day report, store it with a share token,

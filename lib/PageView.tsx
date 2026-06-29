@@ -1,5 +1,5 @@
 "use client";
-// lib/PageView.tsx — first-party client analytics. track() fires a beacon to /api/event;
+// lib/PageView.tsx - first-party client analytics. track() fires a beacon to /api/event;
 // <PageView name=".."/> logs a page_view on mount. Safe to drop into any page.
 import { useEffect } from "react";
 

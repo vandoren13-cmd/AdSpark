@@ -1,5 +1,5 @@
-// lib/email.ts — SERVER ONLY. Pluggable transactional email.
-//   • Primary: Resend HTTP API (raw fetch, no SDK — zero extra connectors).
+// lib/email.ts - SERVER ONLY. Pluggable transactional email.
+//   • Primary: Resend HTTP API (raw fetch, no SDK - zero extra connectors).
 //   • No-op:   logs and returns ok when unconfigured, so the app runs and dev/CI
 //              never send real mail. Same env-gated pattern as lib/stripe.ts.
 // Activate by setting RESEND_API_KEY (+ EMAIL_FROM on a verified domain).
@@ -31,7 +31,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
   const replyTo = input.replyTo ?? REPLY_TO();
 
   if (!KEY()) {
-    console.warn(`[email] not configured — no-op. to=${to.join(",")} subject=${JSON.stringify(input.subject)}`);
+    console.warn(`[email] not configured - no-op. to=${to.join(",")} subject=${JSON.stringify(input.subject)}`);
     return { ok: true, provider: "noop" };
   }
 

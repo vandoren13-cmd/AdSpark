@@ -1,5 +1,5 @@
 "use client";
-// app/r/[id]/page.tsx — PUBLIC, shareable client performance report (no login).
+// app/r/[id]/page.tsx - PUBLIC, shareable client performance report (no login).
 // Reads the report id from the path and the share token from ?t=.
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";

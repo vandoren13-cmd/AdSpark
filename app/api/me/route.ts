@@ -1,4 +1,4 @@
-// app/api/me/route.ts — the signed-in user's plan, usage, and recent generations.
+// app/api/me/route.ts - the signed-in user's plan, usage, and recent generations.
 import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest, adminDb } from "@/lib/firebaseAdmin";
 import { planFor } from "@/lib/plans";

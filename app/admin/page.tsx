@@ -1,5 +1,5 @@
 "use client";
-// app/admin/page.tsx — operator back office. Gated server-side by /api/admin/* (admin
+// app/admin/page.tsx - operator back office. Gated server-side by /api/admin/* (admin
 // flag or ADMIN_EMAILS allowlist); non-admins get a "not authorized" view.
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -168,21 +168,21 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Insights — what's converting (the moat readout) */}
+        {/* Insights - what's converting (the moat readout) */}
         {data?.insights && (
           <div style={{ marginBottom: 26 }}>
             <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 8px" }}>What's converting
               <span style={{ color: "#8b97b3", fontWeight: 500, fontSize: 12 }}> · {data.insights.totals.results} results · ${data.insights.totals.spendUsd.toLocaleString()} spend · {data.insights.totals.roas}x blended ROAS</span>
             </div>
             {data.insights.totals.results === 0 ? (
-              <div className="card" style={{ padding: 16, color: "#8b97b3", fontSize: 13 }}>No performance data yet. Promote a generation to a creative (↓) and log results on it — every row is tagged by hook/format/vertical, and this becomes your proprietary "what converts" benchmark.</div>
+              <div className="card" style={{ padding: 16, color: "#8b97b3", fontSize: 13 }}>No performance data yet. Promote a generation to a creative (↓) and log results on it - every row is tagged by hook/format/vertical, and this becomes your proprietary "what converts" benchmark.</div>
             ) : (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
                 {([["By hook", "byHook"], ["By format", "byFormat"], ["By vertical", "byVertical"], ["By platform", "byPlatform"]] as const).map(([title, k]) => (
                   <div key={k} className="card" style={{ padding: 14 }}>
                     <div style={{ fontSize: 11, color: "#8b97b3", textTransform: "uppercase", letterSpacing: 0.6, marginBottom: 8 }}>{title}</div>
                     {((data.insights as any)[k] || []).length === 0
-                      ? <div style={{ fontSize: 12, color: "#6b7690" }}>—</div>
+                      ? <div style={{ fontSize: 12, color: "#6b7690" }}> - </div>
                       : ((data.insights as any)[k]).map((row: any) => (
                         <div key={row.key} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, padding: "3px 0", gap: 8 }}>
                           <span style={{ color: "#c7d0e6", textTransform: "capitalize", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.key}</span>
@@ -210,7 +210,7 @@ export default function AdminPage() {
                     {l.tier && <span style={{ color: "#7c5cff", fontWeight: 700 }}> · {l.tier}</span>}
                   </div>
                   <div style={{ fontSize: 11.5, color: "#8b97b3" }}>
-                    {[l.company, l.monthlySpend, l.website].filter(Boolean).join(" · ") || "—"}
+                    {[l.company, l.monthlySpend, l.website].filter(Boolean).join(" · ") || " - "}
                   </div>
                   {l.message && <div style={{ fontSize: 12, color: "#aeb9d4", marginTop: 4, lineHeight: 1.4 }}>{l.message}</div>}
                 </div>
@@ -338,7 +338,7 @@ export default function AdminPage() {
             {data.generations.map((g: any) => (
               <div key={g.id} className="card" style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", gap: 10 }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.brief?.product || "—"}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.brief?.product || " - "}</div>
                   <div style={{ fontSize: 11.5, color: "#8b97b3" }}>{g.brief?.platform} · {g.variations?.length || 0} variations · {g.imageCount || 0} images</div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>

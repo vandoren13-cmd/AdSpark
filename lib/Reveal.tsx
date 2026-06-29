@@ -1,5 +1,5 @@
 "use client";
-// lib/Reveal.tsx — scroll-triggered reveal (the "action" as you scroll). Reduced-motion safe
+// lib/Reveal.tsx - scroll-triggered reveal (the "action" as you scroll). Reduced-motion safe
 // (CSS shows content immediately under prefers-reduced-motion).
 import React, { useEffect, useRef, useState } from "react";
 

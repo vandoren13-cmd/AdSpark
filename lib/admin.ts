@@ -1,4 +1,4 @@
-// lib/admin.ts — SERVER ONLY. Gate operator (back-office) endpoints.
+// lib/admin.ts - SERVER ONLY. Gate operator (back-office) endpoints.
 // An authed user is an admin if their user doc has `admin: true`, OR their email is
 // in the ADMIN_EMAILS allowlist (comma-separated env). Returns the uid or null.
 import type { NextRequest } from "next/server";

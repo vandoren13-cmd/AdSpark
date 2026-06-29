@@ -1,4 +1,4 @@
-// lib/collections.ts — the single source of truth for the Firestore data model.
+// lib/collections.ts - the single source of truth for the Firestore data model.
 // Collection names + the shape of every document. All access is server-side via the
 // Admin SDK (see firebaseAdmin.ts); client direct access is denied by firestore.rules.
 //
@@ -27,7 +27,7 @@ export const COL = {
 
 export interface UserDoc {
   plan: string;            // PlanId
-  periodKey: string;       // "YYYY-MM" — monthly quota window
+  periodKey: string;       // "YYYY-MM" - monthly quota window
   used: number;            // generations used this period
   email?: string | null;
   // billing (Phase 2)
@@ -36,7 +36,7 @@ export interface UserDoc {
   subStatus?: string | null;
   // access
   admin?: boolean;         // operator access to /admin
-  // full-suite (done-for-you) opt-in — self-serve stays primary; this is the background switch
+  // full-suite (done-for-you) opt-in - self-serve stays primary; this is the background switch
   serviceStatus?: "none" | "requested" | "active";
   createdAt: number;
   updatedAt: number;
@@ -55,7 +55,7 @@ export interface GenerationDoc {
   imagePrompt: string;
   images: string[];        // persisted Storage download URLs
   imageCount: number;
-  tags?: CreativeTags;     // auto-classified (vertical/hook/format/offer) — moat data
+  tags?: CreativeTags;     // auto-classified (vertical/hook/format/offer) - moat data
   quality?: ImageQuality;
   compliance?: any;        // AI-disclosure record (see lib/compliance.ts)
   createdAt: number;
@@ -126,7 +126,7 @@ export interface CreativeDoc {
   createdAt: number;
 }
 
-// Performance rows — the data that compounds into "what converts for [niche]".
+// Performance rows - the data that compounds into "what converts for [niche]".
 export interface ResultDoc {
   creativeId: string;
   campaignId: string;
@@ -141,7 +141,7 @@ export interface ResultDoc {
   ctr: number;
   cpaUsd: number;
   roas: number;
-  tags?: CreativeTags;        // copied from the creative — lets insights aggregate by what converts
+  tags?: CreativeTags;        // copied from the creative - lets insights aggregate by what converts
   ingestedAt: number;
 }
 

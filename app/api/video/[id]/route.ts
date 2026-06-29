@@ -1,4 +1,4 @@
-// app/api/video/[id]/route.ts — poll a video job. On completion, re-hosts the provider's
+// app/api/video/[id]/route.ts - poll a video job. On completion, re-hosts the provider's
 // time-limited mp4 into Firebase Storage so the ad survives, then marks the doc ready.
 import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest, adminDb } from "@/lib/firebaseAdmin";

@@ -1,4 +1,4 @@
-// app/api/admin/overview/route.ts — back-office dashboard data: headline stats plus
+// app/api/admin/overview/route.ts - back-office dashboard data: headline stats plus
 // recent leads, clients, and global generation activity. Admin-gated.
 import { NextRequest, NextResponse } from "next/server";
 import { adminDb } from "@/lib/firebaseAdmin";

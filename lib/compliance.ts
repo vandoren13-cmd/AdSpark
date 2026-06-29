@@ -1,9 +1,9 @@
-// lib/compliance.ts — AI-disclosure compliance. The FTC regime is functional (deception is
+// lib/compliance.ts - AI-disclosure compliance. The FTC regime is functional (deception is
 // the violation, not AI itself); platforms (TikTok strictest) require AI labels and auto-detect
 // via provenance metadata. We attach a compliance record to every asset, surface a visible
 // "AI-generated" label, and document the policy. NOTE: embedding IPTC DigitalSourceType +
 // signed C2PA Content Credentials into the image bytes (what triggers platform auto-labels)
-// needs an image library + a trust-listed signing cert — tracked in COMPLIANCE.md as the
+// needs an image library + a trust-listed signing cert - tracked in COMPLIANCE.md as the
 // keys-required follow-up. This module covers the record + disclosure layer that ships today.
 
 export const COMPLIANCE_POLICY_VERSION = "2026-06";

@@ -1,4 +1,4 @@
-// lib/enhance.ts — SERVER ONLY. AI image upscaler/enhancer via fal.ai (synchronous run).
+// lib/enhance.ts - SERVER ONLY. AI image upscaler/enhancer via fal.ai (synchronous run).
 // Env-gated; reuses FAL_KEY. Tolerant of result-shape variants across upscaler models.
 export const enhanceReady = () => !!process.env.FAL_KEY;
 

@@ -1,4 +1,4 @@
-// lib/report.ts — SERVER ONLY. Build + store a 30-day client performance report, optionally
+// lib/report.ts - SERVER ONLY. Build + store a 30-day client performance report, optionally
 // emailing the client a shareable link. Shared by the admin route and the weekly cron.
 import { randomUUID } from "crypto";
 import { adminDb } from "./firebaseAdmin";
@@ -36,7 +36,7 @@ export async function buildAndStoreReport(clientId: string, opts?: { email?: boo
 
   const clientName = client.company || client.name || "your brand";
   const summary = results.length
-    ? `Over the last 30 days we ran $${metrics.spendUsd.toLocaleString()} in ad spend for ${clientName} across ${campaigns.length} campaign(s), driving ${conversions} conversions at a ${metrics.roas}x ROAS${topHook ? ` — your best-performing angle was "${topHook.hook}"` : ""}.`
+    ? `Over the last 30 days we ran $${metrics.spendUsd.toLocaleString()} in ad spend for ${clientName} across ${campaigns.length} campaign(s), driving ${conversions} conversions at a ${metrics.roas}x ROAS${topHook ? ` - your best-performing angle was "${topHook.hook}"` : ""}.`
     : `We're setting up ${clientName}'s campaigns. Your first performance report will populate here as results come in.`;
 
   const token = randomUUID();

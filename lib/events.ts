@@ -1,4 +1,4 @@
-// lib/events.ts — SERVER ONLY. First-party funnel analytics (no third-party connector).
+// lib/events.ts - SERVER ONLY. First-party funnel analytics (no third-party connector).
 // Best-effort: never throws, so logging never breaks a request.
 import { adminDb } from "./firebaseAdmin";
 import { COL } from "./collections";

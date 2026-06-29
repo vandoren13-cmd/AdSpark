@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Terms of Service" };
 
-// NOTE: Template terms for launch — have counsel review before relying on these.
+// NOTE: Template terms for launch - have counsel review before relying on these.
 export default function Terms() {
   const h: React.CSSProperties = { fontSize: 18, fontWeight: 800, margin: "26px 0 8px" };
   const p: React.CSSProperties = { fontSize: 14, color: "#9aa6c2", lineHeight: 1.7, margin: "0 0 10px" };
@@ -12,7 +12,7 @@ export default function Terms() {
       <a href="/" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18, background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</a>
       <h1 style={{ fontSize: 30, fontWeight: 900, margin: "18px 0 4px" }}>Terms of Service</h1>
       <div style={{ color: "#6b7690", fontSize: 12.5, marginBottom: 10 }}>Last updated: June 2026</div>
-      <div style={{ background: "#1a1407", border: "1px solid #4a3a12", color: "#e8c878", borderRadius: 10, padding: 12, fontSize: 12.5, marginBottom: 20 }}>⚠️ Template for launch — review with legal counsel before relying on it.</div>
+      <div style={{ background: "#1a1407", border: "1px solid #4a3a12", color: "#e8c878", borderRadius: 10, padding: 12, fontSize: 12.5, marginBottom: 20 }}>⚠️ Template for launch - review with legal counsel before relying on it.</div>
 
       <h2 style={h}>1. Agreement</h2>
       <p style={p}>By accessing or using AdSpark AI (the "Service"), you agree to these Terms. If you do not agree, do not use the Service. AdSpark AI is operated by AdSpark AI ("we", "us").</p>

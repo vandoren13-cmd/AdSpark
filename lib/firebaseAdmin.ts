@@ -1,4 +1,4 @@
-// lib/firebaseAdmin.ts — SERVER ONLY. Verifies user ID tokens + reads/writes the
+// lib/firebaseAdmin.ts - SERVER ONLY. Verifies user ID tokens + reads/writes the
 // user's plan, quota, and generation history. Uses a service account from env.
 import { initializeApp, getApps, cert, App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
@@ -12,7 +12,7 @@ function admin(): App {
     credential: cert({
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      // env stores the key with literal \n — restore real newlines.
+      // env stores the key with literal \n - restore real newlines.
       privateKey: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
     }),
   });

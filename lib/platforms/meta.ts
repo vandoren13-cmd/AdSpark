@@ -1,5 +1,5 @@
-// lib/platforms/meta.ts — SERVER ONLY. Meta (Facebook/Instagram) Marketing API adapter:
-// create campaigns and pull performance insights. Env-gated — if META_ACCESS_TOKEN is
+// lib/platforms/meta.ts - SERVER ONLY. Meta (Facebook/Instagram) Marketing API adapter:
+// create campaigns and pull performance insights. Env-gated - if META_ACCESS_TOKEN is
 // unset, callers fall back to draft/manual flows. Set META_ACCESS_TOKEN + a Meta ad
 // account (per-client or META_AD_ACCOUNT_ID) and smoke-test before relying on it.
 const V = process.env.META_API_VERSION || "v21.0";

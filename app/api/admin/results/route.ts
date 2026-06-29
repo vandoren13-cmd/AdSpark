@@ -1,5 +1,5 @@
-// app/api/admin/results/route.ts — the performance-database pipeline (the moat).
-// Admin-gated. Attributes a results row to a CREATIVE (preferred — carries the
+// app/api/admin/results/route.ts - the performance-database pipeline (the moat).
+// Admin-gated. Attributes a results row to a CREATIVE (preferred - carries the
 // vertical/hook/format/offer tags that power insights) or to a CAMPAIGN.
 //   POST { creativeId, impressions, clicks, spend, conversions, revenue } → per-creative (tagged)
 //   POST { campaignId, ...metrics }                                       → per-campaign

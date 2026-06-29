@@ -1,4 +1,4 @@
-// lib/emails.ts — SERVER ONLY. Branded transactional email templates.
+// lib/emails.ts - SERVER ONLY. Branded transactional email templates.
 // Each returns { subject, html }; pass to sendEmail() from lib/email.ts.
 const APP = () => process.env.NEXT_PUBLIC_APP_URL || "https://adspark.ai";
 
@@ -18,7 +18,7 @@ export function welcomeEmail() {
     subject: "Welcome to AdSpark AI 🚀",
     html: shell(
       "You're in. Let's make ads that convert.",
-      `Describe your product once and AdSpark writes platform-native copy, captions, hashtags and CTAs — and generates matching ad images — in seconds. You've got <b style="color:#e7ecf5">5 free generations</b> to start.<br/><br/>Want us to run the ads end-to-end instead? Reply to this email or check out our done-for-you plans.`,
+      `Describe your product once and AdSpark writes platform-native copy, captions, hashtags and CTAs - and generates matching ad images - in seconds. You've got <b style="color:#e7ecf5">5 free generations</b> to start.<br/><br/>Want us to run the ads end-to-end instead? Reply to this email or check out our done-for-you plans.`,
       { label: "Create your first ad set →", href: `${APP()}/app` },
     ),
   };
@@ -43,8 +43,8 @@ export function leadAckEmail(lead: any) {
   return {
     subject: "We got your AdSpark application",
     html: shell(
-      `Thanks${lead.name ? `, ${lead.name}` : ""} — we'll be in touch.`,
-      `We've received your application and we'll review it within one business day. Expect a short reply with <b style="color:#e7ecf5">3 ad concepts we'd test for you</b> — no charge, no obligation.<br/><br/>In the meantime, you can explore the self-serve generator if you'd like to see the engine in action.`,
+      `Thanks${lead.name ? `, ${lead.name}` : ""} - we'll be in touch.`,
+      `We've received your application and we'll review it within one business day. Expect a short reply with <b style="color:#e7ecf5">3 ad concepts we'd test for you</b> - no charge, no obligation.<br/><br/>In the meantime, you can explore the self-serve generator if you'd like to see the engine in action.`,
       { label: "Try the generator →", href: `${APP()}/login` },
     ),
   };

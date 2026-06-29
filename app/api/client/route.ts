@@ -1,4 +1,4 @@
-// app/api/client/route.ts — data for the managed-client portal. Resolves the client by
+// app/api/client/route.ts - data for the managed-client portal. Resolves the client by
 // ownerUid, else by matching the signed-in user's email (and links ownerUid on first match).
 // Returns a client-safe view of their campaigns, blended performance, and reports.
 import { NextRequest, NextResponse } from "next/server";

@@ -1,5 +1,5 @@
-// lib/firebase.ts — client Firebase (Auth + Firestore). Browser-safe (NEXT_PUBLIC_*).
-// Init is guarded so a missing/empty config never throws at module load — otherwise
+// lib/firebase.ts - client Firebase (Auth + Firestore). Browser-safe (NEXT_PUBLIC_*).
+// Init is guarded so a missing/empty config never throws at module load - otherwise
 // static prerendering (which evaluates this module via AuthProvider) crashes the whole
 // build before the NEXT_PUBLIC_* env vars are set in the host. When configured, it
 // initializes normally; when not, `auth`/`dbc` are undefined and AuthProvider fails soft.
@@ -24,7 +24,7 @@ if (cfg.apiKey) {
     _app = getApps().length ? getApp() : initializeApp(cfg);
     _auth = getAuth(_app);
     _dbc = getFirestore(_app);
-  } catch { /* misconfigured — leave undefined; AuthProvider handles it gracefully */ }
+  } catch { /* misconfigured - leave undefined; AuthProvider handles it gracefully */ }
 }
 
 export const auth = _auth as Auth;

@@ -1,4 +1,4 @@
-// app/api/admin/leads/route.ts — work the lead pipeline. Admin-gated.
+// app/api/admin/leads/route.ts - work the lead pipeline. Admin-gated.
 //   POST { id, status }            → update lead status (new|contacted|won|lost)
 //   POST { id, action: "convert" } → create a client from the lead, mark it won
 import { NextRequest, NextResponse } from "next/server";

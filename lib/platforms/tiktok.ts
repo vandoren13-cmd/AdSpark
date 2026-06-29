@@ -1,4 +1,4 @@
-// lib/platforms/tiktok.ts — SERVER ONLY. TikTok Marketing API adapter (campaign + insights).
+// lib/platforms/tiktok.ts - SERVER ONLY. TikTok Marketing API adapter (campaign + insights).
 // Env-gated; no-ops cleanly when unconfigured. Gotchas handled: auth via the `Access-Token`
 // header (not Bearer); every response is HTTP 200 wrapped in a {code,message,data} envelope
 // (code===0 means success); report arrays are JSON-encoded in the query string; metric values

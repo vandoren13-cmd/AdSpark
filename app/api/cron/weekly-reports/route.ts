@@ -1,4 +1,4 @@
-// app/api/cron/weekly-reports/route.ts — generate + email a 30-day report for every active
+// app/api/cron/weekly-reports/route.ts - generate + email a 30-day report for every active
 // client. Designed for Vercel Cron (which sends Authorization: Bearer ${CRON_SECRET}).
 // Also accepts ?secret= for manual runs. No-ops safely if CRON_SECRET is unset.
 import { NextRequest, NextResponse } from "next/server";

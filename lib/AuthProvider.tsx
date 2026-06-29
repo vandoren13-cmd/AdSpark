@@ -1,5 +1,5 @@
 "use client";
-// lib/AuthProvider.tsx — customer auth context (Firebase Auth: email + Google).
+// lib/AuthProvider.tsx - customer auth context (Firebase Auth: email + Google).
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
@@ -25,7 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // auth may be unconfigured during first setup — fail soft.
+    // auth may be unconfigured during first setup - fail soft.
     try {
       return onAuthStateChanged(auth, u => { setUser(u); setLoading(false); }, () => setLoading(false));
     } catch { setLoading(false); }

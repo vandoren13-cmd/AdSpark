@@ -1,4 +1,4 @@
-// app/api/checkout/route.ts — start a Stripe Checkout session for a self-serve plan.
+// app/api/checkout/route.ts - start a Stripe Checkout session for a self-serve plan.
 // Verifies the user, ensures a Stripe customer exists (stored on the user doc), and
 // returns the hosted checkout URL for the client to redirect to.
 import { NextRequest, NextResponse } from "next/server";

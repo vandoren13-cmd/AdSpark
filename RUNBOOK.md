@@ -1,4 +1,4 @@
-# AdSpark — Activation Runbook
+# AdSpark - Activation Runbook
 
 Everything is **built and deploys green**. This is the exact list of human-only inputs to turn
 it live and start making money. Work top to bottom; each block is independent.
@@ -8,13 +8,13 @@ Variables** (production). Template: [.env.local.example](.env.local.example).
 
 ---
 
-## 0. Deploy the app (Vercel) — do this first
+## 0. Deploy the app (Vercel) - do this first
 1. Import the GitHub repo (`vandoren13-cmd/AdSpark`) into Vercel (Next.js auto-detected).
 2. Add all env vars from `.env.local` to Vercel (Production + Preview).
 3. Set `NEXT_PUBLIC_APP_URL` to your real domain (e.g. `https://adspark.ai`).
 4. Deploy. Add your custom domain in Vercel → Domains.
 
-## 1. Lock the database (security — do this before real users) ⚠️
+## 1. Lock the database (security - do this before real users) ⚠️
 The rules are written but inert until deployed:
 ```
 npm i -g firebase-tools      # if needed
@@ -42,10 +42,10 @@ with, then visit **/admin**. (Add more operators as a comma-separated list.)
 
 ## 5. AI provider billing
 `ANTHROPIC_API_KEY` and `OPENAI_API_KEY` are set. Confirm both accounts have **billing/credits**
-enabled, or generations will fail. (gpt-image-1 sunsets 2026-10-23 — swap engines later via
+enabled, or generations will fail. (gpt-image-1 sunsets 2026-10-23 - swap engines later via
 `IMAGE_ENGINE` in `lib/ai.ts`.)
 
-## 6. Email (Resend) — welcome, lead, report emails
+## 6. Email (Resend) - welcome, lead, report emails
 1. Create a Resend account, verify a **sending domain** (or subdomain like `mail.adspark.ai`).
 2. Add DNS records Resend gives you: **SPF, DKIM, DMARC** (start DMARC at `p=none`).
 3. Set env: `RESEND_API_KEY`, `EMAIL_FROM` (an address on the verified domain), `EMAIL_REPLY_TO`.
@@ -64,10 +64,10 @@ Smoke-test each with one campaign in /admin (it's created PAUSED) before relying
 ## 7b. Video + image enhancement (optional)
 Until configured, the generator's **🎬 Video** mode and the **✨ enhance** button return a
 clear "not configured" message; everything else works.
-- **Avatar / UGC / talking-head video — HeyGen:** create an account, get an API key, and pick a
+- **Avatar / UGC / talking-head video - HeyGen:** create an account, get an API key, and pick a
   default avatar + voice (`GET /v2/avatars`, `/v2/voices`). Set `HEYGEN_API_KEY`,
   `HEYGEN_AVATAR_ID`, `HEYGEN_VOICE_ID`.
-- **Cinematic product video + image enhancer — fal.ai:** get a key → `FAL_KEY`. Optional:
+- **Cinematic product video + image enhancer - fal.ai:** get a key → `FAL_KEY`. Optional:
   `VIDEO_MODEL` (default `fal-ai/veo3/fast`), `IMAGE_ENHANCE_MODEL` (default `fal-ai/clarity-upscaler`).
 - Cost guardrails are built in via per-plan video quota (`plans.ts` → `videos`); an 8s clip ≈ $0.80,
   so tune the quotas before opening the floodgates.
