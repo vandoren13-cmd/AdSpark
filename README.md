@@ -34,6 +34,7 @@ Everything is built and deploys green; live API keys + a few console steps are a
 Follow **[RUNBOOK.md](RUNBOOK.md)** top to bottom.
 
 ## Docs
+- **[PLAYBOOK.md](PLAYBOOK.md)** - how to run the business day to day.
 - **[SETUP-LAPTOP.md](SETUP-LAPTOP.md)** - clone & run on another machine.
 - **[ACCOMPLISHMENTS.md](ACCOMPLISHMENTS.md)** - everything built, by section.
 - **[STRATEGY.md](STRATEGY.md)** - positioning, pricing, moat, roadmap.
