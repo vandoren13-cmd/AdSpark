@@ -4,9 +4,10 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthProvider";
+import { CustomerNav } from "@/lib/CustomerNav";
 
 export default function CreationsPage() {
-  const { user, loading, getToken, logout } = useAuth();
+  const { user, loading, getToken } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<"sets" | "videos">("sets");
   const [gens, setGens] = useState<any[]>([]);
@@ -45,16 +46,7 @@ export default function CreationsPage() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #1c2238" }}>
-        <a href="/app" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18 }}>
-          <span style={{ background: "linear-gradient(135deg,#8b5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</span>
-        </a>
-        <div style={{ display: "flex", gap: 10 }}>
-          <a href="/app" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Generator</a>
-          <a href="/account" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Account</a>
-          <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
-        </div>
-      </header>
+      <CustomerNav active="creations" />
 
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "24px 18px 60px" }}>
         <h1 style={{ fontSize: 24, marginBottom: 4 }}>My Creations</h1>

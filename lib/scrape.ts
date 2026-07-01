@@ -26,8 +26,21 @@ export interface Scraped { title: string; description: string; image: string; si
 export async function scrapeProduct(raw: string): Promise<Scraped> {
   const u = publicHttpUrl(raw);
   if (!u) throw new Error("Enter a valid public http(s) URL.");
-  const res = await fetch(u.toString(), { headers: { "User-Agent": "Mozilla/5.0 (compatible; AdSparkBot/1.0)" }, redirect: "follow", signal: AbortSignal.timeout(12000) });
-  if (!res.ok) throw new Error(`Couldn't fetch that URL (HTTP ${res.status}).`);
+  // Use a realistic desktop browser UA + headers - many sites (Shopify, Cloudflare)
+  // serve 403/404 to unknown bots, which surfaced as a spurious "404" on import.
+  const res = await fetch(u.toString(), {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
+    redirect: "follow",
+    signal: AbortSignal.timeout(12000),
+  });
+  if (!res.ok) {
+    const hint = res.status === 404 ? "the page wasn't found" : res.status === 403 ? "the site blocked the request" : `HTTP ${res.status}`;
+    throw new Error(`Couldn't reach that URL (${hint}). Try the direct product-page link, or fill the brief in manually.`);
+  }
   const html = (await res.text()).slice(0, 600000);
   const titleTag = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || "";
   return {

@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (!loading && user) router.replace("/app"); }, [user, loading, router]);
+  useEffect(() => { if (!loading && user) router.replace("/dashboard"); }, [user, loading, router]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setErr(null); setNotice(null); setBusy(true);
@@ -24,7 +24,7 @@ export default function LoginPage() {
         setNotice("Check your inbox - we've sent a password reset link.");
       } else {
         mode === "in" ? await signIn(email, pw) : await signUp(email, pw);
-        router.replace("/app");
+        router.replace("/dashboard");
       }
     }
     catch (e: any) { setErr(e?.message?.replace("Firebase:", "").trim() || "Failed"); }
@@ -32,7 +32,7 @@ export default function LoginPage() {
   }
   async function google() {
     setErr(null); setNotice(null); setBusy(true);
-    try { await signInGoogle(); router.replace("/app"); }
+    try { await signInGoogle(); router.replace("/dashboard"); }
     catch (e: any) { setErr(e?.message?.replace("Firebase:", "").trim() || "Failed"); }
     finally { setBusy(false); }
   }

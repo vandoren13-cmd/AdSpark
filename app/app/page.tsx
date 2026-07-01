@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/AuthProvider";
+import { CustomerNav } from "@/lib/CustomerNav";
 
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "LinkedIn", "Google", "X (Twitter)", "Pinterest", "YouTube"];
 const TONES = ["Bold & punchy", "Premium & polished", "Friendly & casual", "Urgent / scarcity", "Playful & fun", "Professional"];
@@ -10,7 +11,7 @@ interface Variation { headline: string; primaryText: string; caption: string; ha
 interface AdSet { variations: Variation[]; creativeBrief: string; images: string[]; }
 
 export default function GeneratorPage() {
-  const { user, loading, logout, getToken } = useAuth();
+  const { user, loading, getToken } = useAuth();
   const router = useRouter();
   const [form, setForm] = useState({ brand: "", product: "", goal: "Drive conversions", platform: "Instagram", tone: "Bold & punchy", audience: "" });
   const [importUrl, setImportUrl] = useState("");
@@ -26,7 +27,6 @@ export default function GeneratorPage() {
   const [vbusy, setVbusy] = useState(false);
   const [enhancing, setEnhancing] = useState<number | null>(null);
   const [tip, setTip] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) refreshMe(); }, [user]); // eslint-disable-line
@@ -38,7 +38,7 @@ export default function GeneratorPage() {
       const t = await getToken(); if (!t) return;
       const r = await fetch("/api/me", { headers: { Authorization: `Bearer ${t}` } });
       const j = await r.json();
-      if (j.ok) { setRemaining(j.remaining); setPlanName(j.plan?.name || ""); setIsAdmin(!!j.admin); }
+      if (j.ok) { setRemaining(j.remaining); setPlanName(j.plan?.name || ""); }
     } catch { /* */ }
   }
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -116,19 +116,7 @@ export default function GeneratorPage() {
 
   return (
     <main style={{ minHeight: "100vh" }}>
-      {/* Header */}
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid #1c2238", flexWrap: "wrap", gap: 10 }}>
-        <a href="/app" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18 }}>
-          <span style={{ background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</span>
-        </a>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
-          {remaining !== null && <span style={{ color: "#9aa6c2" }}><b style={{ color: "#e7ecf5" }}>{remaining}</b> left · {planName}</span>}
-          <a href="/creations" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>My Creations</a>
-          {isAdmin && <a href="/admin" className="btn" style={{ padding: "7px 12px", fontSize: 13 }}>Admin</a>}
-          <a href="/account" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Account</a>
-          <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
-        </div>
-      </header>
+      <CustomerNav active="app" remaining={remaining} planName={planName} />
 
       {/* Onboarding nudge (dismissible, one-time) */}
       {tip && (

@@ -23,7 +23,28 @@ export const COL = {
   ratelimits: "adspark_ratelimits",
   support: "adspark_support",     // customer-service tickets (worked in /admin)
   messages: "adspark_messages",   // managed-client <-> operator portal threads
+  content: "adspark_content",     // resources / guides / news / trends (agent-managed)
 } as const;
+
+// Customer-facing content: guides (how to use / deploy), best use cases, industry
+// trends, and news/updates. Maintained by the content-management agent (or an operator)
+// via /api/admin/content; read by the customer Dashboard + /resources hub.
+export type ContentType = "news" | "guide" | "usecase" | "trend";
+export interface ContentDoc {
+  type: ContentType;
+  title: string;
+  slug: string;
+  excerpt?: string;
+  body: string;           // plain text with blank-line paragraphs; "## " lines become headings
+  category?: string;      // e.g. "Getting started", "Launch on Meta"
+  coverEmoji?: string;
+  published: boolean;
+  featured?: boolean;
+  order?: number;         // lower = earlier within a type/category
+  author?: string;        // e.g. "AdSpark Team"
+  createdAt: number;
+  updatedAt: number;
+}
 
 // A customer's saved brand kit - applied to every generation so output is on-brand.
 export interface BrandKit {

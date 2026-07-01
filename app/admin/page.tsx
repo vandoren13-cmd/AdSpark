@@ -10,7 +10,9 @@ import { useAuth } from "@/lib/AuthProvider";
 const grad = { background: "linear-gradient(135deg,#8b5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } as React.CSSProperties;
 const leadColor: Record<string, string> = { new: "#4f8cff", contacted: "#f6c453", won: "#34d399", lost: "#6b7690" };
 
-type View = "dashboard" | "leads" | "clients" | "campaigns" | "creatives" | "support" | "messages" | "customers" | "reports" | "generations";
+type View = "dashboard" | "leads" | "clients" | "campaigns" | "creatives" | "support" | "messages" | "customers" | "content" | "reports" | "generations";
+
+const EMPTY_CONTENT = { id: "", type: "guide", title: "", category: "", coverEmoji: "📄", excerpt: "", body: "", published: true, featured: false, order: 100 };
 
 export default function AdminPage() {
   const { user, loading, getToken, logout } = useAuth();
@@ -38,6 +40,9 @@ export default function AdminPage() {
   const [detailBusy, setDetailBusy] = useState(false);
   const [selThread, setSelThread] = useState<string | null>(null);
   const [msgText, setMsgText] = useState("");
+  // Content management state
+  const [content, setContent] = useState<any[]>([]);
+  const [cnt, setCnt] = useState<any>(EMPTY_CONTENT);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
@@ -51,14 +56,16 @@ export default function AdminPage() {
       if (r.status === 403) { setDenied(true); return; }
       const j = await r.json();
       if (j.ok) { setData(j); setDenied(false); } else setErr(j.error);
-      const [sj, mj, uj] = await Promise.all([
+      const [sj, mj, uj, cj] = await Promise.all([
         fetch("/api/admin/support", { headers: h }).then(x => x.json()).catch(() => ({})),
         fetch("/api/admin/messages", { headers: h }).then(x => x.json()).catch(() => ({})),
         fetch("/api/admin/users", { headers: h }).then(x => x.json()).catch(() => ({})),
+        fetch("/api/admin/content", { headers: h }).then(x => x.json()).catch(() => ({})),
       ]);
       if (sj.ok) setSupport(sj.tickets || []);
       if (mj.ok) setMessages(mj.messages || []);
       if (uj.ok) { setUsers(uj.users || []); setUserCounts(uj.counts || {}); }
+      if (cj.ok) setContent(cj.items || []);
     } catch (e: any) { setErr(e.message); }
     finally { setRefreshing(false); }
   }
@@ -109,6 +116,19 @@ export default function AdminPage() {
     } catch (e: any) { setErr(e.message); }
     finally { setDetailBusy(false); }
   }
+  async function saveContent() {
+    if (!cnt.title.trim()) { setErr("Give the post a title."); return; }
+    const j = await api("/api/admin/content", { ...cnt, order: Number(cnt.order) || 100 }, "save-content");
+    if (j) setCnt(EMPTY_CONTENT);
+  }
+  const editContent = (c: any) => { setCnt({ id: c.id, type: c.type, title: c.title, category: c.category || "", coverEmoji: c.coverEmoji || "📄", excerpt: c.excerpt || "", body: c.body || "", published: c.published !== false, featured: !!c.featured, order: c.order ?? 100 }); if (typeof window !== "undefined") window.scrollTo({ top: 0 }); };
+  async function deleteContent(id: string) {
+    if (!confirm("Delete this post permanently?")) return;
+    setBusyId(id); setErr(null);
+    try { const t = await getToken(); if (!t) return; await fetch("/api/admin/content", { method: "DELETE", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ id }) }); await load(); }
+    catch (e: any) { setErr(e.message); } finally { setBusyId(null); }
+  }
+  const cntSet = (k: string, v: any) => setCnt((s: any) => ({ ...s, [k]: v }));
   function sendForApproval(creativeId: string) {
     const clientId = sendSel[creativeId];
     if (!clientId) { setErr("Pick a client to send this creative to."); return; }
@@ -144,6 +164,7 @@ export default function AdminPage() {
     { id: "support", label: "Support", ico: "💬", badge: openTickets },
     { id: "messages", label: "Messages", ico: "✉️", badge: unreadMsgs },
     { id: "customers", label: "Customers", ico: "👥", badge: userCounts.total || 0, muted: true },
+    { id: "content", label: "Content", ico: "📚", badge: content.length, muted: true },
     { id: "reports", label: "Reports", ico: "📄" },
     { id: "generations", label: "Generations", ico: "✨" },
   ];
@@ -477,6 +498,54 @@ export default function AdminPage() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* CONTENT */}
+            {view === "content" && (
+              <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" }}>
+                {/* Editor */}
+                <div className="card" style={{ padding: 16, flex: "1 1 360px", minWidth: 300 }}>
+                  <div style={{ fontSize: 14, fontWeight: 800, marginBottom: 12 }}>{cnt.id ? "Edit post" : "New post"}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
+                    <div><label style={lbl}>Type</label><select className="in" value={cnt.type} onChange={e => cntSet("type", e.target.value)}><option value="guide">Guide</option><option value="usecase">Use case</option><option value="trend">Trend</option><option value="news">News</option></select></div>
+                    <div><label style={lbl}>Emoji</label><input className="in" value={cnt.coverEmoji} onChange={e => cntSet("coverEmoji", e.target.value)} maxLength={4} /></div>
+                  </div>
+                  <div style={{ marginBottom: 8 }}><label style={lbl}>Title</label><input className="in" value={cnt.title} onChange={e => cntSet("title", e.target.value)} placeholder="How to launch on Meta" /></div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 90px", gap: 8, marginBottom: 8 }}>
+                    <div><label style={lbl}>Category</label><input className="in" value={cnt.category} onChange={e => cntSet("category", e.target.value)} placeholder="Getting started" /></div>
+                    <div><label style={lbl}>Order</label><input className="in" value={cnt.order} onChange={e => cntSet("order", e.target.value)} /></div>
+                  </div>
+                  <div style={{ marginBottom: 8 }}><label style={lbl}>Excerpt</label><input className="in" value={cnt.excerpt} onChange={e => cntSet("excerpt", e.target.value)} placeholder="One-line summary" /></div>
+                  <div style={{ marginBottom: 10 }}><label style={lbl}>Body <span style={{ textTransform: "none", color: "#6b7690" }}>(&quot;## &quot; starts a heading; blank line = new paragraph)</span></label><textarea className="in" rows={8} value={cnt.body} onChange={e => cntSet("body", e.target.value)} style={{ resize: "vertical" }} /></div>
+                  <div style={{ display: "flex", gap: 16, marginBottom: 12, fontSize: 13, color: "#c7d0e6" }}>
+                    <label style={{ display: "flex", gap: 6, alignItems: "center", cursor: "pointer" }}><input type="checkbox" checked={cnt.published} onChange={e => cntSet("published", e.target.checked)} /> Published</label>
+                    <label style={{ display: "flex", gap: 6, alignItems: "center", cursor: "pointer" }}><input type="checkbox" checked={cnt.featured} onChange={e => cntSet("featured", e.target.checked)} /> Featured</label>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button className="btn btn-spark" disabled={busyId === "save-content"} onClick={saveContent} style={{ fontSize: 13 }}>{cnt.id ? "Save changes" : "Publish post"}</button>
+                    {cnt.id && <button className="btn-ghost btn" onClick={() => setCnt(EMPTY_CONTENT)} style={{ fontSize: 13 }}>New</button>}
+                  </div>
+                </div>
+                {/* List */}
+                <div style={{ flex: "1 1 360px", minWidth: 300 }}>
+                  {content.length === 0 ? empty("No content yet. Create the first post, or let the content agent populate it.") : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {content.map((c: any) => (
+                        <div key={c.id} className="card" style={{ padding: "10px 12px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, border: cnt.id === c.id ? "1.5px solid #7c5cff" : undefined }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.coverEmoji} {c.title}</div>
+                            <div style={{ fontSize: 11, color: "#8b97b3" }}>{c.type}{c.category ? ` · ${c.category}` : ""} · {c.published ? "published" : "draft"}{c.featured ? " · featured" : ""}</div>
+                          </div>
+                          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                            <button className="btn-ghost btn" onClick={() => editContent(c)} style={{ padding: "4px 9px", fontSize: 11.5 }}>Edit</button>
+                            <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => deleteContent(c.id)} style={{ padding: "4px 9px", fontSize: 11.5, color: "#ff6b6b" }}>Del</button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
 
             {/* REPORTS */}
