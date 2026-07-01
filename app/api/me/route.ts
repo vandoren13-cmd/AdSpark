@@ -16,6 +16,10 @@ export async function GET(req: NextRequest) {
     const plan = planFor(u.plan);
     const used = u.periodKey === periodKey() ? (u.used || 0) : 0;
 
+    // Is this user an operator? (admin flag on the doc, or email in ADMIN_EMAILS)
+    const adminEmails = (process.env.ADMIN_EMAILS || "").split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+    const isAdmin = u.admin === true || (!!u.email && adminEmails.includes(String(u.email).toLowerCase()));
+
     // Recent history (single-field query → no composite index needed).
     let history: any[] = [];
     try {
@@ -31,6 +35,7 @@ export async function GET(req: NextRequest) {
       serviceStatus: u.serviceStatus || "none",
       displayName: u.displayName || null,
       brandKit: u.brandKit || null,
+      admin: isAdmin,
       history,
     });
   } catch (e: any) {

@@ -26,6 +26,7 @@ export default function GeneratorPage() {
   const [vbusy, setVbusy] = useState(false);
   const [enhancing, setEnhancing] = useState<number | null>(null);
   const [tip, setTip] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) refreshMe(); }, [user]); // eslint-disable-line
@@ -37,7 +38,7 @@ export default function GeneratorPage() {
       const t = await getToken(); if (!t) return;
       const r = await fetch("/api/me", { headers: { Authorization: `Bearer ${t}` } });
       const j = await r.json();
-      if (j.ok) { setRemaining(j.remaining); setPlanName(j.plan?.name || ""); }
+      if (j.ok) { setRemaining(j.remaining); setPlanName(j.plan?.name || ""); setIsAdmin(!!j.admin); }
     } catch { /* */ }
   }
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
@@ -123,6 +124,7 @@ export default function GeneratorPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
           {remaining !== null && <span style={{ color: "#9aa6c2" }}><b style={{ color: "#e7ecf5" }}>{remaining}</b> left · {planName}</span>}
           <a href="/creations" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>My Creations</a>
+          {isAdmin && <a href="/admin" className="btn" style={{ padding: "7px 12px", fontSize: 13 }}>Admin</a>}
           <a href="/account" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Account</a>
           <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
         </div>
