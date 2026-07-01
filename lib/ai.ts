@@ -60,7 +60,7 @@ export async function generateAdCopy(brief: AdBrief, variants: number, brandKit?
   const msg = await anthropic.messages.create({
     model: "claude-opus-4-8",
     max_tokens: 2600,
-    system: "You are an elite direct-response advertising copywriter and creative director. You write scroll-stopping, platform-native ad copy that converts - specific, benefit-led, no fluff, no clichés. When brand guidelines are provided, follow them strictly. Respond ONLY with valid JSON, no markdown.",
+    system: "You are an elite direct-response advertising copywriter and creative director. You write scroll-stopping, platform-native ad copy that converts - specific, benefit-led, no fluff, no clichés. When brand guidelines are provided, follow them strictly. NEVER use em-dashes (—) or en-dashes (–) anywhere; use a plain hyphen, comma, or rephrase. Respond ONLY with valid JSON, no markdown.",
     messages: [{
       role: "user",
       content: `Create ad creative for this campaign.
@@ -171,7 +171,7 @@ export async function generateVideoScript(brief: AdBrief, seconds = 20): Promise
   const msg = await anthropic.messages.create({
     model: "claude-opus-4-8",
     max_tokens: 1500,
-    system: "You are an elite short-form video ad scriptwriter (UGC + direct response). Write tight, scroll-stopping scripts with a 2-second hook. Respond ONLY with valid JSON, no markdown.",
+    system: "You are an elite short-form video ad scriptwriter (UGC + direct response). Write tight, scroll-stopping scripts with a 2-second hook. NEVER use em-dashes (—) or en-dashes (–) anywhere; use a plain hyphen, comma, or rephrase. Respond ONLY with valid JSON, no markdown.",
     messages: [{
       role: "user",
       content: `Write a ~${seconds}s ${brief.platform} video ad script.

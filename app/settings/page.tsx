@@ -99,7 +99,7 @@ export default function SettingsPage() {
           <div style={{ marginBottom: 12 }}><label style={label}>Words / claims to avoid</label><input className="in" value={bk.avoid} onChange={e => setBk({ ...bk, avoid: e.target.value })} placeholder="e.g. 'cheap', 'guaranteed', competitor names" /></div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div><label style={label}>Default audience</label><input className="in" value={bk.audience} onChange={e => setBk({ ...bk, audience: e.target.value })} placeholder="e.g. women 25-40, clean beauty" /></div>
-            <div><label style={label}>Default platform</label><select className="in" value={bk.platform} onChange={e => setBk({ ...bk, platform: e.target.value })}>{PLATFORMS.map(p => <option key={p} value={p}>{p || "—"}</option>)}</select></div>
+            <div><label style={label}>Default platform</label><select className="in" value={bk.platform} onChange={e => setBk({ ...bk, platform: e.target.value })}>{PLATFORMS.map(p => <option key={p} value={p}>{p || "None"}</option>)}</select></div>
           </div>
         </div>
 

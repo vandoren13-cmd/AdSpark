@@ -51,7 +51,7 @@ export async function briefFromScrape(s: Scraped): Promise<{ brand: string; prod
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
       model: "claude-opus-4-8", max_tokens: 500,
-      system: "Extract a concise advertising brief from scraped product-page data. Respond ONLY with valid JSON, no markdown.",
+      system: "Extract a concise advertising brief from scraped product-page data. NEVER use em-dashes (—) or en-dashes (–); use a plain hyphen or comma. Respond ONLY with valid JSON, no markdown.",
       messages: [{ role: "user", content: `Return JSON {brand, product, audience, tone, goal} for this page.\nSite: ${s.siteName}\nTitle: ${s.title}\nDescription: ${s.description}\nPrice: ${s.price}\n\nbrand = brand/company name; product = 1-2 sentence offer description; audience = likely target audience; tone = short tone label; goal = likely ad goal.` }],
     });
     const text = msg.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
