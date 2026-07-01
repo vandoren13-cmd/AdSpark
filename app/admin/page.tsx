@@ -28,6 +28,10 @@ export default function AdminPage() {
   const [view, setView] = useState<View>("dashboard");
   const [q, setQ] = useState("");
   const [nc, setNc] = useState({ clientId: "", name: "", platform: "meta", objective: "traffic", dailyBudgetUsd: "" });
+  // Support helpdesk UI state
+  const [selTicket, setSelTicket] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [supportFilter, setSupportFilter] = useState<"all" | "open" | "pending" | "resolved">("all");
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
@@ -80,7 +84,11 @@ export default function AdminPage() {
   const promoteCreative = (genId: string) => api("/api/admin/creatives", { fromGenerationId: genId }, genId);
   const generateReport = (clientId: string) => api("/api/admin/reports", { clientId, email: true }, clientId);
   const supportAction = (id: string, body: any) => api("/api/admin/support", { id, ...body }, id);
-  const replyToTicket = (id: string) => { const reply = prompt("Reply to the customer (emails them):"); if (reply?.trim()) supportAction(id, { reply: reply.trim() }); };
+  async function sendReply(id: string) {
+    if (!replyText.trim()) return;
+    const text = replyText.trim(); setReplyText("");
+    await supportAction(id, { reply: text });
+  }
   const replyToClient = (clientId: string) => { const text = prompt("Reply to the client:"); if (text?.trim()) api("/api/admin/messages", { clientId, text: text.trim() }, "msg-" + clientId); };
   function sendForApproval(creativeId: string) {
     const clientId = sendSel[creativeId];
@@ -288,24 +296,87 @@ export default function AdminPage() {
               </div>
             ))}
 
-            {/* SUPPORT */}
-            {view === "support" && (support.length === 0 ? empty("No support requests yet. Customer messages from /support land here.") : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {support.map((t: any) => (
-                  <div key={t.id} className="card" style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
-                      <div style={{ minWidth: 0, flex: "1 1 300px" }}><div style={{ fontSize: 13.5, fontWeight: 700 }}>{t.subject} <span style={{ color: "#8b97b3", fontWeight: 500 }}>· {t.email}</span></div><div style={{ fontSize: 12, color: "#aeb9d4", marginTop: 4, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{t.message}</div></div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: t.status === "resolved" ? "#34d399" : t.status === "pending" ? "#f6c453" : "#4f8cff" }}>{t.status}</span>
-                        <button className="btn" disabled={busyId === t.id} onClick={() => replyToTicket(t.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Reply</button>
-                        {t.status !== "resolved" ? <button className="btn-ghost btn" disabled={busyId === t.id} onClick={() => supportAction(t.id, { status: "resolved" })} style={{ padding: "5px 10px", fontSize: 12 }}>Resolve</button> : <button className="btn-ghost btn" disabled={busyId === t.id} onClick={() => supportAction(t.id, { status: "open" })} style={{ padding: "5px 10px", fontSize: 12 }}>Reopen</button>}
-                      </div>
+            {/* SUPPORT - helpdesk (list + conversation) */}
+            {view === "support" && (support.length === 0 ? empty("No support requests yet. Customer messages from /support land here.") : (() => {
+              const stColor = (st: string) => st === "resolved" ? "#34d399" : st === "pending" ? "#f6c453" : "#4f8cff";
+              const count = (st: string) => support.filter(t => t.status === st).length;
+              const filtered = support.filter(t => supportFilter === "all" || t.status === supportFilter);
+              const active = support.find(t => t.id === selTicket) || null;
+              const thread = active ? [{ from: "customer", text: active.message, at: active.createdAt }, ...(active.replies || [])] : [];
+              return (
+                <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" }}>
+                  {/* Left: filters + ticket list */}
+                  <div style={{ flex: "1 1 300px", minWidth: 270, maxWidth: 400 }}>
+                    <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+                      {(["all", "open", "pending", "resolved"] as const).map(f => (
+                        <button key={f} onClick={() => setSupportFilter(f)} className="chip" style={{ padding: "5px 11px", fontSize: 11.5, cursor: "pointer", textTransform: "capitalize", background: supportFilter === f ? "#7c5cff22" : undefined, borderColor: supportFilter === f ? "#7c5cff55" : undefined, color: supportFilter === f ? "#cbbcff" : undefined }}>
+                          {f}{f !== "all" ? ` ${count(f)}` : ` ${support.length}`}
+                        </button>
+                      ))}
                     </div>
-                    {(t.replies || []).map((r: any, i: number) => <div key={i} style={{ marginTop: 6, padding: 8, background: r.from === "agent" ? "#10142a" : "#0a0e1c", border: "1px solid #1c2238", borderRadius: 8 }}><span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: r.from === "agent" ? "#8b5cff" : "#8b97b3" }}>{r.from === "agent" ? "Agent" : "Customer"}: </span><span style={{ fontSize: 12.5, color: "#cdd6ea" }}>{r.text}</span></div>)}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "70vh", overflowY: "auto" }}>
+                      {filtered.length === 0 ? <div style={{ color: "#6b7690", fontSize: 12.5, padding: 8 }}>No {supportFilter} tickets.</div> : filtered.map((t: any) => {
+                        const sel = t.id === selTicket;
+                        const last = (t.replies || [])[t.replies?.length - 1];
+                        const awaiting = t.status !== "resolved" && (!last || last.from === "customer");
+                        return (
+                          <button key={t.id} onClick={() => { setSelTicket(t.id); setReplyText(""); }} className="card" style={{ textAlign: "left", padding: "10px 12px", cursor: "pointer", border: sel ? "1.5px solid #7c5cff" : undefined, background: sel ? "#10142a" : undefined }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                              <span style={{ width: 7, height: 7, borderRadius: 7, background: stColor(t.status), flexShrink: 0 }} />
+                              <span style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.subject}</span>
+                              {awaiting && <span className="admin-badge" style={{ marginLeft: "auto" }}>new</span>}
+                            </div>
+                            <div style={{ fontSize: 11, color: "#8b97b3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.email}</div>
+                            <div style={{ fontSize: 11.5, color: "#6b7690", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.message}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
-              </div>
-            ))}
+
+                  {/* Right: conversation + reply */}
+                  <div style={{ flex: "2 1 420px", minWidth: 300 }}>
+                    {!active ? (
+                      <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3", fontSize: 13.5 }}>
+                        <div style={{ fontSize: 32, marginBottom: 10 }}>💬</div>Select a ticket to read and reply.
+                      </div>
+                    ) : (
+                      <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "78vh" }}>
+                        {/* header */}
+                        <div style={{ padding: "14px 16px", borderBottom: "1px solid #1c2238", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 15, fontWeight: 800 }}>{active.subject}</div>
+                            <div style={{ fontSize: 12, color: "#8b97b3" }}>{active.email} · opened {active.createdAt ? new Date(active.createdAt).toLocaleDateString() : ""}</div>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                            <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: stColor(active.status) }}>{active.status}</span>
+                            {active.status !== "pending" && <button className="btn-ghost btn" disabled={busyId === active.id} onClick={() => supportAction(active.id, { status: "pending" })} style={{ padding: "5px 10px", fontSize: 12 }}>Pending</button>}
+                            {active.status !== "resolved" ? <button className="btn-ghost btn" disabled={busyId === active.id} onClick={() => supportAction(active.id, { status: "resolved" })} style={{ padding: "5px 10px", fontSize: 12 }}>Resolve</button> : <button className="btn-ghost btn" disabled={busyId === active.id} onClick={() => supportAction(active.id, { status: "open" })} style={{ padding: "5px 10px", fontSize: 12 }}>Reopen</button>}
+                          </div>
+                        </div>
+                        {/* conversation */}
+                        <div style={{ padding: 16, overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 10, background: "#080b14" }}>
+                          {thread.map((m: any, i: number) => (
+                            <div key={i} style={{ alignSelf: m.from === "agent" ? "flex-end" : "flex-start", maxWidth: "82%" }}>
+                              <div style={{ fontSize: 10, color: "#6b7690", marginBottom: 3, textAlign: m.from === "agent" ? "right" : "left" }}>{m.from === "agent" ? "You" : active.email}{m.at ? ` · ${new Date(m.at).toLocaleString()}` : ""}</div>
+                              <div style={{ padding: "9px 13px", borderRadius: 12, fontSize: 13, lineHeight: 1.5, whiteSpace: "pre-wrap", background: m.from === "agent" ? "linear-gradient(135deg,#7c5cff,#4f8cff)" : "#0d1120", border: m.from === "agent" ? "none" : "1px solid #1c2238", color: m.from === "agent" ? "#fff" : "#cdd6ea" }}>{m.text}</div>
+                            </div>
+                          ))}
+                        </div>
+                        {/* reply box */}
+                        <div style={{ padding: 12, borderTop: "1px solid #1c2238" }}>
+                          <textarea className="in" rows={2} value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Type your reply… (sends an email to the customer)" style={{ resize: "vertical", marginBottom: 8 }} onKeyDown={e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) sendReply(active.id); }} />
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 11, color: "#6b7690" }}>⌘/Ctrl + Enter to send · emails the customer</span>
+                            <button className="btn btn-spark" disabled={busyId === active.id || !replyText.trim()} onClick={() => sendReply(active.id)} style={{ padding: "8px 16px", fontSize: 13 }}>{busyId === active.id ? "Sending…" : "Send reply"}</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })())}
 
             {/* MESSAGES */}
             {view === "messages" && (threads.length === 0 ? empty("No client messages yet. Managed clients message you from their portal.") : (
