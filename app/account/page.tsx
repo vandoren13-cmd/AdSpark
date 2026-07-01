@@ -30,16 +30,9 @@ export default function AccountPage() {
     } catch (e: any) { setErr(e.message); }
   }
 
-  async function upgrade(planId: string) {
-    setBillingBusy(true); setErr(null);
-    try {
-      const t = await getToken(); if (!t) return;
-      const r = await fetch("/api/checkout", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ plan: planId }) });
-      const j = await r.json();
-      if (j.url) { window.location.href = j.url; return; }
-      setErr(j.error || "Checkout failed.");
-    } catch (e: any) { setErr(e.message); }
-    finally { setBillingBusy(false); }
+  function upgrade(planId: string) {
+    // On-site embedded checkout (no redirect to Stripe) - see app/checkout/page.tsx.
+    router.push(`/checkout?plan=${planId}`);
   }
 
   async function manageBilling() {

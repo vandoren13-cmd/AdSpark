@@ -1,6 +1,8 @@
-// app/api/checkout/route.ts - start a Stripe Checkout session for a self-serve plan.
-// Verifies the user, ensures a Stripe customer exists (stored on the user doc), and
-// returns the hosted checkout URL for the client to redirect to.
+// app/api/checkout/route.ts - start an EMBEDDED Stripe Checkout session for a
+// self-serve plan. Verifies the user, ensures a Stripe customer exists (stored on
+// the user doc), and returns the session client_secret for the embedded checkout
+// component to mount on-site (no redirect to Stripe). Card data still goes directly
+// to Stripe via their iframe (PCI SAQ A) - it never touches our server.
 import { NextRequest, NextResponse } from "next/server";
 import { uidFromRequest, adminDb, adminAuth } from "@/lib/firebaseAdmin";
 import { COL } from "@/lib/collections";
@@ -33,17 +35,18 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const session = await stripe().checkout.sessions.create({
+      ui_mode: "embedded",
       mode: "subscription",
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       client_reference_id: uid,
       subscription_data: { metadata: { uid } },
       allow_promotion_codes: true,
-      success_url: `${appUrl}/account?checkout=success`,
-      cancel_url: `${appUrl}/account?checkout=cancel`,
+      // Embedded checkout returns the user here after completion (same domain).
+      return_url: `${appUrl}/account?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
     });
 
-    return NextResponse.json({ ok: true, url: session.url });
+    return NextResponse.json({ ok: true, clientSecret: session.client_secret });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message || "Checkout failed." }, { status: 500 });
   }
