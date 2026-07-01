@@ -66,20 +66,39 @@ async function readerFallback(u: URL): Promise<Scraped | null> {
   } catch { return null; }
 }
 
+// Marketplaces that serve a generic *site* page to a direct fetch (so we'd scrape the
+// wrong description). Read these via the proxy first to get the real listing.
+const PREFER_READER = ["etsy.com", "amazon.", "aliexpress.", "ebay.com", "walmart.com", "wayfair.com"];
+
+// Reject obviously-generic marketplace boilerplate so we fall through to a better source.
+function looksGeneric(s: Scraped, host: string): boolean {
+  const t = `${s.title} ${s.description}`.toLowerCase();
+  if (host.includes("etsy.com")) return /online marketplace for buying and selling/.test(t) || s.title.trim().toLowerCase() === "etsy";
+  return false;
+}
+
 export async function scrapeProduct(raw: string): Promise<Scraped> {
   const u = publicHttpUrl(raw);
   if (!u) throw new Error("Enter a valid public http(s) URL.");
-  // 1. Direct fetch with a realistic browser identity (works for most sites).
+  const host = u.hostname.toLowerCase();
+  const hard = PREFER_READER.some(h => host.includes(h));
+
+  // Bot-protected marketplaces: read via proxy first (a direct fetch returns a generic page).
+  if (hard) {
+    const r = await readerFallback(u);
+    if (r && (r.title || r.description)) return r;
+  }
+  // Direct fetch with a realistic browser identity (works for most sites).
   try {
     const res = await fetch(u.toString(), { headers: BROWSER_HEADERS, redirect: "follow", signal: AbortSignal.timeout(12000) });
     if (res.ok) {
       const scraped = parseHtml((await res.text()).slice(0, 600000), u);
-      if (scraped.title || scraped.description) return scraped;
+      if ((scraped.title || scraped.description) && !looksGeneric(scraped, host)) return scraped;
     }
-  } catch { /* fall through to the reader proxy */ }
-  // 2. Reader-proxy fallback for bot-protected marketplaces (Etsy, Amazon, ...).
+  } catch { /* fall through */ }
+  // Reader fallback for everything else (or when the direct page looked generic).
   const viaReader = await readerFallback(u);
-  if (viaReader) return viaReader;
+  if (viaReader && (viaReader.title || viaReader.description)) return viaReader;
   throw new Error("Couldn't reach that URL - the site blocks automated requests. Copy the product details into the brief below and hit Generate.");
 }
 
