@@ -12,6 +12,9 @@ export default function AdminPage() {
   const { user, loading, getToken, logout } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<any>(null);
+  const [support, setSupport] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [sendSel, setSendSel] = useState<Record<string, string>>({});
   const [denied, setDenied] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -27,7 +30,47 @@ export default function AdminPage() {
       if (r.status === 403) { setDenied(true); return; }
       const j = await r.json();
       if (j.ok) { setData(j); setDenied(false); } else setErr(j.error);
+      // Support tickets + client messages (separate endpoints).
+      try { const sr = await fetch("/api/admin/support", { headers: { Authorization: `Bearer ${t}` } }); const sj = await sr.json(); if (sj.ok) setSupport(sj.tickets || []); } catch { /* */ }
+      try { const mr = await fetch("/api/admin/messages", { headers: { Authorization: `Bearer ${t}` } }); const mj = await mr.json(); if (mj.ok) setMessages(mj.messages || []); } catch { /* */ }
     } catch (e: any) { setErr(e.message); }
+  }
+
+  async function sendForApproval(creativeId: string) {
+    const clientId = sendSel[creativeId];
+    if (!clientId) { setErr("Pick a client to send this creative to."); return; }
+    setBusyId(creativeId); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/creatives", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ action: "send_for_approval", id: creativeId, clientId }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+  async function replyToClient(clientId: string) {
+    const text = prompt("Reply to the client:");
+    if (!text || !text.trim()) return;
+    setBusyId("msg-" + clientId); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/messages", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ clientId, text: text.trim() }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+
+  async function supportAction(id: string, body: any) {
+    setBusyId(id); setErr(null);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch("/api/admin/support", { method: "POST", headers: { Authorization: `Bearer ${t}`, "Content-Type": "application/json" }, body: JSON.stringify({ id, ...body }) });
+      const j = await r.json(); if (!j.ok) throw new Error(j.error); await load();
+    } catch (e: any) { setErr(e.message); }
+    finally { setBusyId(null); }
+  }
+  function replyToTicket(id: string) {
+    const reply = prompt("Reply to the customer (emails them):");
+    if (reply && reply.trim()) supportAction(id, { reply: reply.trim() });
   }
 
   async function leadAction(id: string, body: any) {
@@ -165,6 +208,40 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Support - customer-service queue */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Support
+          <span style={{ color: "#8b97b3", fontWeight: 500, fontSize: 12 }}> · {support.filter(t => t.status !== "resolved").length} open</span>
+        </div>
+        {support.length === 0 ? (
+          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>No support requests yet. Customer messages from <a href="/support" style={{ color: "#7c5cff" }}>/support</a> land here.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
+            {support.map((t: any) => (
+              <div key={t.id} className="card" style={{ padding: "12px 14px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+                  <div style={{ minWidth: 0, flex: "1 1 300px" }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700 }}>{t.subject} <span style={{ color: "#8b97b3", fontWeight: 500 }}>· {t.email}</span></div>
+                    <div style={{ fontSize: 12, color: "#aeb9d4", marginTop: 4, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{t.message}</div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", color: t.status === "resolved" ? "#34d399" : t.status === "pending" ? "#f6c453" : "#4f8cff" }}>{t.status}</span>
+                    <button className="btn" disabled={busyId === t.id} onClick={() => replyToTicket(t.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Reply</button>
+                    {t.status !== "resolved"
+                      ? <button className="btn-ghost btn" disabled={busyId === t.id} onClick={() => supportAction(t.id, { status: "resolved" })} style={{ padding: "5px 10px", fontSize: 12 }}>Resolve</button>
+                      : <button className="btn-ghost btn" disabled={busyId === t.id} onClick={() => supportAction(t.id, { status: "open" })} style={{ padding: "5px 10px", fontSize: 12 }}>Reopen</button>}
+                  </div>
+                </div>
+                {(t.replies || []).map((r: any, i: number) => (
+                  <div key={i} style={{ marginTop: 6, padding: 8, background: r.from === "agent" ? "#10142a" : "#0a0e1c", border: "1px solid #1c2238", borderRadius: 8 }}>
+                    <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", color: r.from === "agent" ? "#8b5cff" : "#8b97b3" }}>{r.from === "agent" ? "Agent" : "Customer"}: </span>
+                    <span style={{ fontSize: 12.5, color: "#cdd6ea" }}>{r.text}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         )}
 
@@ -323,9 +400,44 @@ export default function AdminPage() {
                     <div style={{ fontSize: 11.5, color: "#7c5cff" }}>{[c.tags?.hook, c.tags?.format, c.tags?.vertical, c.tags?.offer].filter(Boolean).join(" · ") || "untagged"}</div>
                   </div>
                 </div>
-                <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => logCreativeResults(c.id)} style={{ padding: "5px 10px", fontSize: 12, flexShrink: 0 }}>Log results</button>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, flexWrap: "wrap" }}>
+                  {c.approvalStatus && c.approvalStatus !== "none" && (
+                    <span style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", color: c.approvalStatus === "approved" ? "#34d399" : c.approvalStatus === "changes_requested" ? "#f6c453" : "#4f8cff" }}>
+                      {c.approvalStatus === "approved" ? "✓ approved" : c.approvalStatus === "changes_requested" ? "changes" : "pending"}
+                    </span>
+                  )}
+                  <select className="in" value={sendSel[c.id] || ""} onChange={e => setSendSel(s => ({ ...s, [c.id]: e.target.value }))} style={{ width: "auto", padding: "5px 8px", fontSize: 11.5 }}>
+                    <option value="">Client…</option>
+                    {(data?.clients || []).map((cl: any) => <option key={cl.id} value={cl.id}>{cl.company || cl.name || cl.email}</option>)}
+                  </select>
+                  <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => sendForApproval(c.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Send for approval</button>
+                  <button className="btn-ghost btn" disabled={busyId === c.id} onClick={() => logCreativeResults(c.id)} style={{ padding: "5px 10px", fontSize: 12 }}>Log results</button>
+                </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Client messages */}
+        <div style={{ fontSize: 16, fontWeight: 800, margin: "8px 0 12px" }}>Client messages
+          <span style={{ color: "#8b97b3", fontWeight: 500, fontSize: 12 }}> · {messages.filter(m => m.from === "client" && !m.readByOperator).length} unread</span>
+        </div>
+        {messages.length === 0 ? (
+          <div className="card" style={{ padding: 18, color: "#8b97b3", fontSize: 13, marginBottom: 26 }}>No client messages yet. Managed clients message you from their portal.</div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
+            {Object.entries(messages.reduce((acc: Record<string, any[]>, m: any) => { (acc[m.clientId] = acc[m.clientId] || []).push(m); return acc; }, {})).map(([cid, ms]: any) => {
+              const latest = ms[0];
+              return (
+                <div key={cid} className="card" style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div style={{ minWidth: 0, flex: "1 1 300px" }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 700 }}>{clientName(cid)}</div>
+                    <div style={{ fontSize: 12, color: "#aeb9d4", marginTop: 3 }}><b style={{ color: latest.from === "client" ? "#4f8cff" : "#8b5cff" }}>{latest.from}:</b> {latest.text}</div>
+                  </div>
+                  <button className="btn" disabled={busyId === "msg-" + cid} onClick={() => replyToClient(cid)} style={{ padding: "5px 10px", fontSize: 12, flexShrink: 0 }}>Reply</button>
+                </div>
+              );
+            })}
           </div>
         )}
 

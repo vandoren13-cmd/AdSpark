@@ -3,6 +3,19 @@
 //   • Ad IMAGES → a pluggable model-router (default: OpenAI gpt-image-1) - returns base64 PNGs.
 import Anthropic from "@anthropic-ai/sdk";
 import type { ImageQuality } from "@/lib/plans";
+import type { BrandKit } from "@/lib/collections";
+
+// Turn a saved brand kit into a prompt block so every generation stays on-brand.
+function brandBlock(bk?: BrandKit | null): string {
+  if (!bk) return "";
+  const lines = [
+    bk.name && `Brand name: ${bk.name}`,
+    bk.voice && `Brand voice/tone (match it): ${bk.voice}`,
+    bk.benefits && `Key benefits / proof points to lean on: ${bk.benefits}`,
+    bk.avoid && `NEVER use these words/claims: ${bk.avoid}`,
+  ].filter(Boolean);
+  return lines.length ? `\n\nBRAND GUIDELINES (follow strictly):\n${lines.join("\n")}` : "";
+}
 
 export interface AdBrief {
   brand: string;
@@ -42,12 +55,12 @@ function parseJSON<T>(raw: string, fallback: T): T {
 }
 
 // ── Ad copy (Claude) ─────────────────────────────────────────────────────────
-export async function generateAdCopy(brief: AdBrief, variants: number): Promise<{ variations: AdVariation[]; creativeBrief: string; imagePrompt: string; tags: AdTags }> {
+export async function generateAdCopy(brief: AdBrief, variants: number, brandKit?: BrandKit | null): Promise<{ variations: AdVariation[]; creativeBrief: string; imagePrompt: string; tags: AdTags }> {
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const msg = await anthropic.messages.create({
     model: "claude-opus-4-8",
     max_tokens: 2600,
-    system: "You are an elite direct-response advertising copywriter and creative director. You write scroll-stopping, platform-native ad copy that converts - specific, benefit-led, no fluff, no clichés. Respond ONLY with valid JSON, no markdown.",
+    system: "You are an elite direct-response advertising copywriter and creative director. You write scroll-stopping, platform-native ad copy that converts - specific, benefit-led, no fluff, no clichés. When brand guidelines are provided, follow them strictly. Respond ONLY with valid JSON, no markdown.",
     messages: [{
       role: "user",
       content: `Create ad creative for this campaign.
@@ -57,7 +70,7 @@ Product/offer: ${brief.product}
 Goal: ${brief.goal}
 Platform: ${brief.platform}
 Tone: ${brief.tone}
-Target audience: ${brief.audience}
+Target audience: ${brief.audience}${brandBlock(brandKit)}
 
 Return JSON exactly:
 {
@@ -143,8 +156,8 @@ export async function generateAdImages(prompt: string, n: number, quality: Image
   return out;
 }
 
-export async function generateAdSet(brief: AdBrief, variants: number, images: number, quality: ImageQuality = "medium"): Promise<AdSet> {
-  const copy = await generateAdCopy(brief, variants);
+export async function generateAdSet(brief: AdBrief, variants: number, images: number, quality: ImageQuality = "medium", brandKit?: BrandKit | null): Promise<AdSet> {
+  const copy = await generateAdCopy(brief, variants, brandKit);
   const imgs = images > 0 ? await generateAdImages(copy.imagePrompt, images, quality) : [];
   return { ...copy, images: imgs };
 }

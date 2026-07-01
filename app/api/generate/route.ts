@@ -7,7 +7,7 @@ import { planFor } from "@/lib/plans";
 import { generateAdSet, AdBrief } from "@/lib/ai";
 import { uploadPng } from "@/lib/storage";
 import { sendEmail } from "@/lib/email";
-import { welcomeEmail } from "@/lib/emails";
+import { welcomeEmail, quotaWarningEmail } from "@/lib/emails";
 import { complianceRecord } from "@/lib/compliance";
 import { rateLimit } from "@/lib/ratelimit";
 import { logEvent } from "@/lib/events";
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     };
     if (!brief.product.trim()) return NextResponse.json({ ok: false, error: "Describe your product/offer." }, { status: 400 });
 
-    const adSet = await generateAdSet(brief, plan.variants, plan.images, plan.imageQuality);
+    const adSet = await generateAdSet(brief, plan.variants, plan.images, plan.imageQuality, u.brandKit);
     if (!adSet.variations.length) return NextResponse.json({ ok: false, error: "Generation failed - please try again." }, { status: 502 });
 
     // Persist images to Firebase Storage so they survive refresh and power history,
@@ -80,6 +80,19 @@ export async function POST(req: NextRequest) {
       plan: plan.id, periodKey: pk, used: (u.periodKey === pk ? FieldValue.increment(1) : 1),
       email: u.email || null, updatedAt: now, createdAt: u.createdAt || now,
     }, { merge: true });
+
+    // Low-quota warning: once per period, when they cross 80% (but aren't fully out).
+    const newUsed = used + 1;
+    if (newUsed >= Math.ceil(plan.quota * 0.8) && newUsed < plan.quota && u.quotaWarnedPeriod !== pk) {
+      try {
+        const email = u.email || (await adminAuth().getUser(uid)).email;
+        if (email) {
+          const w = quotaWarningEmail(plan.name, newUsed, plan.quota);
+          await sendEmail({ to: email, subject: w.subject, html: w.html, idempotencyKey: `quota:${uid}:${pk}` });
+          await userRef.set({ quotaWarnedPeriod: pk }, { merge: true });
+        }
+      } catch { /* best-effort */ }
+    }
 
     // Welcome the user on their first generation (best-effort; no-ops until email configured).
     if (isNewUser) {

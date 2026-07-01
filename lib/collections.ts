@@ -21,7 +21,44 @@ export const COL = {
   videos: "adspark_videos",
   events: "adspark_events",
   ratelimits: "adspark_ratelimits",
+  support: "adspark_support",     // customer-service tickets (worked in /admin)
+  messages: "adspark_messages",   // managed-client <-> operator portal threads
 } as const;
+
+// A customer's saved brand kit - applied to every generation so output is on-brand.
+export interface BrandKit {
+  name?: string;        // brand name
+  voice?: string;       // tone/voice, e.g. "warm, confident, no hype"
+  benefits?: string;    // key benefits / proof points to lean on
+  avoid?: string;       // words/claims to never use
+  audience?: string;    // default target audience
+  platform?: string;    // default platform prefill
+}
+
+// Customer-service ticket. New tickets notify the support inbox; a CS agent works
+// them in /admin (reply -> emails the customer, and updates status).
+export type SupportStatus = "open" | "pending" | "resolved";
+export interface SupportDoc {
+  uid?: string | null;
+  email: string;
+  subject: string;
+  message: string;
+  status: SupportStatus;
+  replies?: { from: "agent" | "customer"; text: string; at: number }[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+// A message in a managed-client portal thread (client <-> operator).
+export interface MessageDoc {
+  clientId: string;
+  from: "client" | "operator";
+  uid?: string | null;
+  text: string;
+  readByOperator?: boolean;
+  readByClient?: boolean;
+  createdAt: number;
+}
 
 // ── Funnel (self-serve tool) ─────────────────────────────────────────────────
 
@@ -38,6 +75,13 @@ export interface UserDoc {
   admin?: boolean;         // operator access to /admin
   // full-suite (done-for-you) opt-in - self-serve stays primary; this is the background switch
   serviceStatus?: "none" | "requested" | "active";
+  // profile + brand
+  displayName?: string | null;
+  brandKit?: BrandKit;     // applied to every generation so output is on-brand
+  // usage extras
+  videoPeriodKey?: string;
+  videosUsed?: number;
+  quotaWarnedPeriod?: string; // period we already sent an 80%-quota warning for
   createdAt: number;
   updatedAt: number;
 }
@@ -123,6 +167,10 @@ export interface CreativeDoc {
   externalAdId?: string | null;
   aiDisclosed?: boolean;      // FTC/platform AI label applied
   status: "draft" | "live" | "archived";
+  // client-in-the-loop approval (managed clients approve creative before launch)
+  approvalStatus?: "none" | "pending" | "approved" | "changes_requested";
+  clientNote?: string | null;   // client's note when requesting changes
+  decidedAt?: number | null;
   createdAt: number;
 }
 

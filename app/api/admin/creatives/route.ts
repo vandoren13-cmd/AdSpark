@@ -28,6 +28,16 @@ export async function POST(req: NextRequest) {
     const b = await req.json().catch(() => ({}));
     const db = adminDb();
     const now = Date.now();
+
+    // Assign an existing creative to a client and send it for their approval.
+    if (b.action === "send_for_approval" && b.id) {
+      if (!b.clientId) return NextResponse.json({ ok: false, error: "Pick a client to send this to." }, { status: 400 });
+      await db.collection(COL.creatives).doc(String(b.id)).set(
+        { clientId: String(b.clientId), approvalStatus: "pending", clientNote: null, decidedAt: null }, { merge: true },
+      );
+      return NextResponse.json({ ok: true });
+    }
+
     const fromGenerationId = String(b.fromGenerationId || "");
 
     let doc: any;

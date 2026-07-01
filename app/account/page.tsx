@@ -71,8 +71,11 @@ export default function AccountPage() {
         <a href="/app" style={{ textDecoration: "none", fontWeight: 900, fontSize: 18 }}>
           <span style={{ background: "linear-gradient(135deg,#7c5cff,#4f8cff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>AdSpark AI</span>
         </a>
-        <div style={{ display: "flex", gap: 10 }}>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <a href="/app" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>← Generator</a>
+          <a href="/creations" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>My Creations</a>
+          <a href="/settings" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Settings</a>
+          <a href="/support" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Support</a>
           <a href="/portal" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Client portal</a>
           <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
         </div>

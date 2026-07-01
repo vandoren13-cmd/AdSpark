@@ -25,9 +25,12 @@ export default function GeneratorPage() {
   const [video, setVideo] = useState<{ status: string; url?: string } | null>(null);
   const [vbusy, setVbusy] = useState(false);
   const [enhancing, setEnhancing] = useState<number | null>(null);
+  const [tip, setTip] = useState(false);
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) refreshMe(); }, [user]); // eslint-disable-line
+  useEffect(() => { try { setTip(!localStorage.getItem("adspark_tip_dismissed")); } catch { /* */ } }, []);
+  function dismissTip() { try { localStorage.setItem("adspark_tip_dismissed", "1"); } catch { /* */ } setTip(false); }
 
   async function refreshMe() {
     try {
@@ -119,10 +122,25 @@ export default function GeneratorPage() {
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 13 }}>
           {remaining !== null && <span style={{ color: "#9aa6c2" }}><b style={{ color: "#e7ecf5" }}>{remaining}</b> left · {planName}</span>}
+          <a href="/creations" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>My Creations</a>
           <a href="/account" className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Account</a>
           <button onClick={() => { logout(); router.replace("/"); }} className="btn-ghost btn" style={{ padding: "7px 12px", fontSize: 13 }}>Log out</button>
         </div>
       </header>
+
+      {/* Onboarding nudge (dismissible, one-time) */}
+      {tip && (
+        <div style={{ maxWidth: 1100, margin: "16px auto 0", padding: "0 18px" }}>
+          <div className="gborder" style={{ borderRadius: 12, padding: 1 }}>
+            <div className="glass" style={{ borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+              <div style={{ fontSize: 13, color: "#c7d0e6", flex: "1 1 320px", lineHeight: 1.5 }}>
+                👋 <b>New here?</b> Set up your <a href="/settings" style={{ color: "#8b5cff" }}>Brand Kit</a> so every ad sounds like you, paste a product URL to auto-fill the brief, and find everything you make under <a href="/creations" style={{ color: "#8b5cff" }}>My Creations</a>.
+              </div>
+              <button onClick={dismissTip} className="btn-ghost btn" style={{ padding: "6px 12px", fontSize: 12.5, whiteSpace: "nowrap" }}>Got it</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mode toggle */}
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 18px 0", display: "flex", gap: 8 }}>

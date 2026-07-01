@@ -60,3 +60,38 @@ export function reportReadyEmail(clientName: string, reportUrl: string, summary:
     ),
   };
 }
+
+export function quotaWarningEmail(planName: string, used: number, quota: number) {
+  return {
+    subject: "You're running low on generations",
+    html: shell(
+      "You've used most of your generations",
+      `You've used <b style="color:#e7ecf5">${used} of ${quota}</b> generations on the ${planName} plan this month. Upgrade any time to keep creating without interruption - more generations, more variations, and more AI video.`,
+      { label: "Upgrade your plan →", href: `${APP()}/account` },
+    ),
+  };
+}
+
+// Sent to the support inbox when a customer opens a ticket (CS agent works it in /admin).
+export function supportReceivedEmail(t: { email: string; subject: string; message: string }) {
+  return {
+    subject: `New support request: ${t.subject || t.email}`,
+    html: shell(
+      "New customer support request",
+      `<div style="font-size:13px"><b style="color:#e7ecf5">From:</b> ${t.email}<br/><b style="color:#e7ecf5">Subject:</b> ${t.subject || "(none)"}</div><br/><div style="background:#0a0e1c;border:1px solid #1c2238;border-radius:10px;padding:12px;color:#aeb9d4">${t.message}</div>`,
+      { label: "Open Support in the console →", href: `${APP()}/admin` },
+    ),
+  };
+}
+
+// Sent to the customer when the CS agent replies to their ticket from /admin.
+export function supportReplyEmail(subject: string, reply: string) {
+  return {
+    subject: `Re: ${subject || "your AdSpark support request"}`,
+    html: shell(
+      "A reply from AdSpark support",
+      `${reply}<br/><br/><span style="color:#8b97b3">Just reply to this email if you need anything else.</span>`,
+      { label: "Open AdSpark →", href: `${APP()}/app` },
+    ),
+  };
+}
