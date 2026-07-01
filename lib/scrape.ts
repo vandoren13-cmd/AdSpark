@@ -23,25 +23,15 @@ const meta = (html: string, prop: string) => {
 
 export interface Scraped { title: string; description: string; image: string; siteName: string; price: string; url: string; }
 
-export async function scrapeProduct(raw: string): Promise<Scraped> {
-  const u = publicHttpUrl(raw);
-  if (!u) throw new Error("Enter a valid public http(s) URL.");
-  // Use a realistic desktop browser UA + headers - many sites (Shopify, Cloudflare)
-  // serve 403/404 to unknown bots, which surfaced as a spurious "404" on import.
-  const res = await fetch(u.toString(), {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-    },
-    redirect: "follow",
-    signal: AbortSignal.timeout(12000),
-  });
-  if (!res.ok) {
-    const hint = res.status === 404 ? "the page wasn't found" : res.status === 403 ? "the site blocked the request" : `HTTP ${res.status}`;
-    throw new Error(`Couldn't reach that URL (${hint}). Try the direct product-page link, or fill the brief in manually.`);
-  }
-  const html = (await res.text()).slice(0, 600000);
+const BROWSER_HEADERS: Record<string, string> = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+  "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Sec-Fetch-Dest": "document", "Sec-Fetch-Mode": "navigate", "Sec-Fetch-Site": "none",
+  "Upgrade-Insecure-Requests": "1",
+};
+
+function parseHtml(html: string, u: URL): Scraped {
   const titleTag = html.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || "";
   return {
     title: meta(html, "og:title") || decode(titleTag),
@@ -51,6 +41,46 @@ export async function scrapeProduct(raw: string): Promise<Scraped> {
     price: meta(html, "product:price:amount") || meta(html, "og:price:amount"),
     url: u.toString(),
   };
+}
+
+// Reader-proxy fallback for bot-protected sites (Etsy, Amazon, etc.). r.jina.ai fetches
+// the page and returns clean text, bypassing most bot walls. Anonymous access is now
+// rate/reputation-limited, so set JINA_API_KEY (free tier) to make hard sites reliable.
+async function readerFallback(u: URL): Promise<Scraped | null> {
+  try {
+    const headers: Record<string, string> = { "User-Agent": BROWSER_HEADERS["User-Agent"], "X-Return-Format": "markdown" };
+    if (process.env.JINA_API_KEY) headers["Authorization"] = `Bearer ${process.env.JINA_API_KEY}`;
+    const res = await fetch(`https://r.jina.ai/${u.toString()}`, {
+      headers,
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!res.ok) return null;
+    const txt = await res.text();
+    const title = decode(txt.match(/^Title:\s*(.+)$/m)?.[1] || "");
+    const start = txt.indexOf("Markdown Content:");
+    const content = (start >= 0 ? txt.slice(start + 17) : txt)
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, "").replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+      .replace(/[#>*_`|]/g, " ").replace(/\s+/g, " ").trim().slice(0, 1400);
+    if (!title && !content) return null;
+    return { title, description: content, image: "", siteName: u.hostname.replace(/^www\./, ""), price: "", url: u.toString() };
+  } catch { return null; }
+}
+
+export async function scrapeProduct(raw: string): Promise<Scraped> {
+  const u = publicHttpUrl(raw);
+  if (!u) throw new Error("Enter a valid public http(s) URL.");
+  // 1. Direct fetch with a realistic browser identity (works for most sites).
+  try {
+    const res = await fetch(u.toString(), { headers: BROWSER_HEADERS, redirect: "follow", signal: AbortSignal.timeout(12000) });
+    if (res.ok) {
+      const scraped = parseHtml((await res.text()).slice(0, 600000), u);
+      if (scraped.title || scraped.description) return scraped;
+    }
+  } catch { /* fall through to the reader proxy */ }
+  // 2. Reader-proxy fallback for bot-protected marketplaces (Etsy, Amazon, ...).
+  const viaReader = await readerFallback(u);
+  if (viaReader) return viaReader;
+  throw new Error("Couldn't reach that URL - the site blocks automated requests. Copy the product details into the brief below and hit Generate.");
 }
 
 export async function briefFromScrape(s: Scraped): Promise<{ brand: string; product: string; audience: string; tone: string; goal: string }> {
