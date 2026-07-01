@@ -107,8 +107,11 @@ export async function scrapeProduct(raw: string): Promise<Scraped> {
 }
 
 export async function briefFromScrape(s: Scraped): Promise<{ brand: string; product: string; audience: string; tone: string; goal: string }> {
+  // Never fall back to a marketplace hostname as the brand - leave it blank so the
+  // customer fills in their own shop/brand name.
+  const isMarketplace = /etsy|amazon|ebay|aliexpress|walmart|wayfair/i.test(`${s.siteName} ${s.url}`);
   const fallback = {
-    brand: s.siteName || "",
+    brand: isMarketplace ? "" : (s.siteName || ""),
     product: [s.title, s.description].filter(Boolean).join(" - ").slice(0, 800),
     audience: "", tone: "Bold & punchy", goal: "Drive conversions",
   };
@@ -122,8 +125,10 @@ export async function briefFromScrape(s: Scraped): Promise<{ brand: string; prod
     });
     const text = msg.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
     const j = JSON.parse(text.replace(/```json|```/g, "").trim());
+    let brand = String(j.brand || fallback.brand);
+    if (/^(etsy|amazon|ebay|walmart|aliexpress|wayfair)(\.com)?$/i.test(brand.trim())) brand = "";
     return {
-      brand: String(j.brand || fallback.brand),
+      brand,
       product: String(j.product || fallback.product),
       audience: String(j.audience || ""),
       tone: String(j.tone || "Bold & punchy"),
