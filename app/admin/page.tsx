@@ -32,6 +32,12 @@ export default function AdminPage() {
   const [selTicket, setSelTicket] = useState<string | null>(null);
   const [replyText, setReplyText] = useState("");
   const [supportFilter, setSupportFilter] = useState<"all" | "open" | "pending" | "resolved">("all");
+  // Customer detail + Messages helpdesk state
+  const [selUser, setSelUser] = useState<string | null>(null);
+  const [userDetail, setUserDetail] = useState<any>(null);
+  const [detailBusy, setDetailBusy] = useState(false);
+  const [selThread, setSelThread] = useState<string | null>(null);
+  const [msgText, setMsgText] = useState("");
 
   useEffect(() => { if (!loading && !user) router.replace("/login"); }, [user, loading, router]);
   useEffect(() => { if (user) load(); }, [user]); // eslint-disable-line
@@ -89,7 +95,20 @@ export default function AdminPage() {
     const text = replyText.trim(); setReplyText("");
     await supportAction(id, { reply: text });
   }
-  const replyToClient = (clientId: string) => { const text = prompt("Reply to the client:"); if (text?.trim()) api("/api/admin/messages", { clientId, text: text.trim() }, "msg-" + clientId); };
+  async function sendClientMessage(clientId: string) {
+    if (!msgText.trim()) return;
+    const text = msgText.trim(); setMsgText("");
+    await api("/api/admin/messages", { clientId, text }, "msg-" + clientId);
+  }
+  async function openCustomer(id: string) {
+    setSelUser(id); setUserDetail(null); setDetailBusy(true);
+    try {
+      const t = await getToken(); if (!t) return;
+      const r = await fetch(`/api/admin/user/${id}`, { headers: { Authorization: `Bearer ${t}` } });
+      const j = await r.json(); if (j.ok) setUserDetail(j); else setErr(j.error);
+    } catch (e: any) { setErr(e.message); }
+    finally { setDetailBusy(false); }
+  }
   function sendForApproval(creativeId: string) {
     const clientId = sendSel[creativeId];
     if (!clientId) { setErr("Pick a client to send this creative to."); return; }
@@ -380,24 +399,57 @@ export default function AdminPage() {
               );
             })())}
 
-            {/* MESSAGES */}
-            {view === "messages" && (threads.length === 0 ? empty("No client messages yet. Managed clients message you from their portal.") : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {threads.map(([cid, ms]: any) => (
-                  <div key={cid} className="card" style={{ padding: "12px 14px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 700 }}>{clientName(cid)}</div>
-                      <button className="btn" disabled={busyId === "msg-" + cid} onClick={() => replyToClient(cid)} style={{ padding: "5px 10px", fontSize: 12 }}>Reply</button>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      {[...ms].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)).map((m: any) => (
-                        <div key={m.id} style={{ alignSelf: m.from === "operator" ? "flex-end" : "flex-start", maxWidth: "78%", padding: "7px 11px", borderRadius: 9, background: m.from === "operator" ? "linear-gradient(135deg,#7c5cff,#4f8cff)" : "#0a0e1c", border: m.from === "operator" ? "none" : "1px solid #1c2238", color: m.from === "operator" ? "#fff" : "#cdd6ea", fontSize: 12.5, lineHeight: 1.45, whiteSpace: "pre-wrap" }}>{m.text}</div>
-                      ))}
+            {/* MESSAGES - helpdesk (thread list + conversation) */}
+            {view === "messages" && (threads.length === 0 ? empty("No client messages yet. Managed clients message you from their portal.") : (() => {
+              const active = threads.find(([cid]: any) => cid === selThread) as any;
+              const conv = active ? [...active[1]].sort((a: any, b: any) => (a.createdAt || 0) - (b.createdAt || 0)) : [];
+              return (
+                <div style={{ display: "flex", gap: 14, alignItems: "flex-start", flexWrap: "wrap" }}>
+                  {/* Left: client thread list */}
+                  <div style={{ flex: "1 1 280px", minWidth: 260, maxWidth: 360 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: "74vh", overflowY: "auto" }}>
+                      {threads.map(([cid, ms]: any) => {
+                        const sorted = [...ms].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                        const last = sorted[sorted.length - 1];
+                        const unread = ms.some((m: any) => m.from === "client" && !m.readByOperator);
+                        const sel = cid === selThread;
+                        return (
+                          <button key={cid} onClick={() => { setSelThread(cid); setMsgText(""); }} className="card" style={{ textAlign: "left", padding: "10px 12px", cursor: "pointer", border: sel ? "1.5px solid #7c5cff" : undefined, background: sel ? "#10142a" : undefined }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName(cid)}</span>
+                              {unread && <span className="admin-badge" style={{ marginLeft: "auto" }}>new</span>}
+                            </div>
+                            <div style={{ fontSize: 11.5, color: "#6b7690", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{last?.from === "operator" ? "You: " : ""}{last?.text}</div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
-                ))}
-              </div>
-            ))}
+                  {/* Right: conversation + reply */}
+                  <div style={{ flex: "2 1 420px", minWidth: 300 }}>
+                    {!active ? (
+                      <div className="card" style={{ padding: 40, textAlign: "center", color: "#8b97b3", fontSize: 13.5 }}><div style={{ fontSize: 32, marginBottom: 10 }}>✉️</div>Select a client to view the thread.</div>
+                    ) : (
+                      <div className="card" style={{ padding: 0, overflow: "hidden", display: "flex", flexDirection: "column", maxHeight: "78vh" }}>
+                        <div style={{ padding: "14px 16px", borderBottom: "1px solid #1c2238", fontSize: 15, fontWeight: 800 }}>{clientName(active[0])}</div>
+                        <div style={{ padding: 16, overflowY: "auto", flex: 1, display: "flex", flexDirection: "column", gap: 8, background: "#080b14" }}>
+                          {conv.map((m: any) => (
+                            <div key={m.id} style={{ alignSelf: m.from === "operator" ? "flex-end" : "flex-start", maxWidth: "80%" }}>
+                              <div style={{ fontSize: 10, color: "#6b7690", marginBottom: 3, textAlign: m.from === "operator" ? "right" : "left" }}>{m.from === "operator" ? "You" : clientName(active[0])}{m.createdAt ? ` · ${new Date(m.createdAt).toLocaleString()}` : ""}</div>
+                              <div style={{ padding: "8px 12px", borderRadius: 11, fontSize: 13, lineHeight: 1.45, whiteSpace: "pre-wrap", background: m.from === "operator" ? "linear-gradient(135deg,#7c5cff,#4f8cff)" : "#0d1120", border: m.from === "operator" ? "none" : "1px solid #1c2238", color: m.from === "operator" ? "#fff" : "#cdd6ea" }}>{m.text}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ padding: 12, borderTop: "1px solid #1c2238", display: "flex", gap: 8 }}>
+                          <input className="in" value={msgText} onChange={e => setMsgText(e.target.value)} placeholder="Message the client…" onKeyDown={e => { if (e.key === "Enter") sendClientMessage(active[0]); }} />
+                          <button className="btn btn-spark" disabled={busyId === "msg-" + active[0] || !msgText.trim()} onClick={() => sendClientMessage(active[0])} style={{ padding: "0 16px", whiteSpace: "nowrap" }}>Send</button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })())}
 
             {/* CUSTOMERS */}
             {view === "customers" && (
@@ -410,16 +462,17 @@ export default function AdminPage() {
                 {users.filter(u => !ql || [u.email, u.displayName].some((x: string) => (x || "").toLowerCase().includes(ql))).length === 0 ? empty("No customers match.") : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                     {users.filter(u => !ql || [u.email, u.displayName].some((x: string) => (x || "").toLowerCase().includes(ql))).map(u => (
-                      <div key={u.id} className="card" style={{ padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                      <button key={u.id} onClick={() => openCustomer(u.id)} className="card hover-pop" style={{ textAlign: "left", cursor: "pointer", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                         <div style={{ minWidth: 0, flex: "1 1 260px" }}>
                           <div style={{ fontSize: 13, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{u.displayName || u.email || u.id}{u.admin && <span style={{ color: "#8b5cff", fontSize: 10.5, fontWeight: 800 }}> · ADMIN</span>}</div>
                           <div style={{ fontSize: 11.5, color: "#8b97b3" }}>{u.email}{u.hasBrandKit ? " · brand kit ✓" : ""}{u.serviceStatus !== "none" ? ` · service: ${u.serviceStatus}` : ""}</div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                          <div style={{ textAlign: "right" }}><div style={{ fontSize: 13, fontWeight: 800, textTransform: "capitalize" }}>{u.plan}{u.subStatus ? "" : ""}</div><div style={{ fontSize: 11, color: "#8b97b3" }}>{u.used} used</div></div>
+                          <div style={{ textAlign: "right" }}><div style={{ fontSize: 13, fontWeight: 800, textTransform: "capitalize" }}>{u.plan}</div><div style={{ fontSize: 11, color: "#8b97b3" }}>{u.used} used</div></div>
                           <span style={{ fontSize: 11, color: "#6b7690" }}>{u.createdAt ? new Date(u.createdAt).toLocaleDateString() : ""}</span>
+                          <span style={{ color: "#8b5cff", fontSize: 14 }}>›</span>
                         </div>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 )}
@@ -452,6 +505,82 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Customer detail drill-down */}
+      {selUser && (
+        <div onClick={() => { setSelUser(null); setUserDetail(null); }} style={{ position: "fixed", inset: 0, background: "#04060cd8", zIndex: 100, display: "grid", placeItems: "center", padding: 20, overflow: "auto" }}>
+          <div onClick={e => e.stopPropagation()} className="card" style={{ padding: 20, maxWidth: 760, width: "100%", maxHeight: "90vh", overflow: "auto" }}>
+            {(detailBusy || !userDetail) ? (
+              <div style={{ padding: 30, textAlign: "center", color: "#8b97b3" }}>Loading customer…</div>
+            ) : (() => {
+              const d = userDetail; const cu = d.user;
+              return (
+                <>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 12, marginBottom: 14 }}>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800 }}>{cu.displayName || cu.email || cu.id}{cu.admin && <span style={{ color: "#8b5cff", fontSize: 11, fontWeight: 800 }}> · ADMIN</span>}</div>
+                      <div style={{ fontSize: 12.5, color: "#8b97b3" }}>{cu.email} · joined {cu.createdAt ? new Date(cu.createdAt).toLocaleDateString() : "-"}</div>
+                    </div>
+                    <button onClick={() => { setSelUser(null); setUserDetail(null); }} className="btn-ghost btn" style={{ padding: "6px 10px", fontSize: 13 }}>✕</button>
+                  </div>
+
+                  {/* Stats */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginBottom: 16 }}>
+                    <div className="card" style={{ padding: 12 }}><div style={{ fontSize: 10.5, color: "#8b97b3", textTransform: "uppercase" }}>Plan</div><div style={{ fontSize: 16, fontWeight: 800 }}>{cu.plan}{cu.subStatus ? <span style={{ fontSize: 11, color: "#8b97b3", fontWeight: 500 }}> · {cu.subStatus}</span> : ""}</div></div>
+                    <div className="card" style={{ padding: 12 }}><div style={{ fontSize: 10.5, color: "#8b97b3", textTransform: "uppercase" }}>Generations</div><div style={{ fontSize: 16, fontWeight: 800 }}>{cu.used}/{cu.quota}</div></div>
+                    <div className="card" style={{ padding: 12 }}><div style={{ fontSize: 10.5, color: "#8b97b3", textTransform: "uppercase" }}>Videos</div><div style={{ fontSize: 16, fontWeight: 800 }}>{cu.videosUsed}/{cu.videoQuota}</div></div>
+                    <div className="card" style={{ padding: 12 }}><div style={{ fontSize: 10.5, color: "#8b97b3", textTransform: "uppercase" }}>Service</div><div style={{ fontSize: 16, fontWeight: 800, textTransform: "capitalize" }}>{cu.serviceStatus}</div></div>
+                  </div>
+
+                  {/* Brand kit */}
+                  {cu.brandKit && (cu.brandKit.name || cu.brandKit.voice || cu.brandKit.benefits) && (
+                    <div className="card" style={{ padding: 14, marginBottom: 16 }}>
+                      <div style={{ fontSize: 12, fontWeight: 800, marginBottom: 6 }}>Brand kit</div>
+                      <div style={{ fontSize: 12.5, color: "#aab7cf", lineHeight: 1.6 }}>
+                        {cu.brandKit.name && <div><b style={{ color: "#8b97b3" }}>Name:</b> {cu.brandKit.name}</div>}
+                        {cu.brandKit.voice && <div><b style={{ color: "#8b97b3" }}>Voice:</b> {cu.brandKit.voice}</div>}
+                        {cu.brandKit.benefits && <div><b style={{ color: "#8b97b3" }}>Benefits:</b> {cu.brandKit.benefits}</div>}
+                        {cu.brandKit.avoid && <div><b style={{ color: "#8b97b3" }}>Avoid:</b> {cu.brandKit.avoid}</div>}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Support tickets */}
+                  {d.tickets?.length > 0 && (
+                    <div style={{ marginBottom: 16 }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>Support tickets ({d.tickets.length})</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {d.tickets.map((t: any) => (
+                          <button key={t.id} onClick={() => { setSelUser(null); setUserDetail(null); setView("support"); setSelTicket(t.id); }} className="card" style={{ textAlign: "left", cursor: "pointer", padding: "8px 12px", display: "flex", justifyContent: "space-between", gap: 10 }}>
+                            <span style={{ fontSize: 12.5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.subject}</span>
+                            <span style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", color: t.status === "resolved" ? "#34d399" : t.status === "pending" ? "#f6c453" : "#4f8cff", flexShrink: 0 }}>{t.status}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Recent generations */}
+                  <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 8 }}>Recent creations ({d.generations?.length || 0} sets · {d.videos?.length || 0} videos)</div>
+                  {(!d.generations || d.generations.length === 0) ? <div style={{ color: "#8b97b3", fontSize: 12.5 }}>No generations yet.</div> : (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 8 }}>
+                      {d.generations.slice(0, 12).map((g: any) => (
+                        <div key={g.id} className="card" style={{ padding: 0, overflow: "hidden" }}>
+                          {g.images?.[0] ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={g.images[0]} alt="" style={{ width: "100%", height: 80, objectFit: "cover", display: "block" }} />
+                          ) : <div style={{ height: 80, display: "grid", placeItems: "center", background: "#0a0e1c", color: "#6b7690" }}>✨</div>}
+                          <div style={{ padding: "6px 8px", fontSize: 10.5, color: "#aab7cf", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{g.product || "Ad set"}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      )}
     </main>
   );
 }
