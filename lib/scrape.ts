@@ -48,7 +48,11 @@ function parseHtml(html: string, u: URL): Scraped {
 // rate/reputation-limited, so set JINA_API_KEY (free tier) to make hard sites reliable.
 async function readerFallback(u: URL): Promise<Scraped | null> {
   try {
-    const headers: Record<string, string> = { "User-Agent": BROWSER_HEADERS["User-Agent"], "X-Return-Format": "markdown" };
+    const headers: Record<string, string> = {
+      "User-Agent": BROWSER_HEADERS["User-Agent"],
+      "X-Return-Format": "markdown",
+      "X-Engine": "browser",  // render like a real browser - gets past more bot walls (Etsy, etc.)
+    };
     if (process.env.JINA_API_KEY) headers["Authorization"] = `Bearer ${process.env.JINA_API_KEY}`;
     const res = await fetch(`https://r.jina.ai/${u.toString()}`, {
       headers,
@@ -112,9 +116,9 @@ export async function briefFromScrape(s: Scraped): Promise<{ brand: string; prod
   try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await anthropic.messages.create({
-      model: "claude-opus-4-8", max_tokens: 500,
-      system: "Extract a concise advertising brief from scraped product-page data. NEVER use em-dashes (—) or en-dashes (–); use a plain hyphen or comma. Respond ONLY with valid JSON, no markdown.",
-      messages: [{ role: "user", content: `Return JSON {brand, product, audience, tone, goal} for this page.\nSite: ${s.siteName}\nTitle: ${s.title}\nDescription: ${s.description}\nPrice: ${s.price}\n\nbrand = brand/company name; product = 1-2 sentence offer description; audience = likely target audience; tone = short tone label; goal = likely ad goal.` }],
+      model: "claude-opus-4-8", max_tokens: 600,
+      system: "You extract an advertising brief from a product page. The brand is the specific seller/shop/company that makes or sells THIS item - NEVER the marketplace it is listed on (never 'Etsy', 'Amazon', 'eBay', 'Walmart'). The product is a description of THIS specific item and its key features/benefits. NEVER use em-dashes (—) or en-dashes (–); use a plain hyphen or comma. Respond ONLY with valid JSON, no markdown.",
+      messages: [{ role: "user", content: `From this product page, return JSON {brand, product, tone, goal}.\n\nPage title: ${s.title}\nPage content: ${s.description}\nPrice: ${s.price}\nURL: ${s.url}\n\n- brand = the specific seller/shop/company name for this product (NOT the marketplace like Etsy or Amazon). If unclear, leave it blank.\n- product = a specific 1-2 sentence description of THIS product: what it is, key features, and who it appeals to.\n- tone = a short tone label that fits the product.\n- goal = the likely ad goal (e.g. drive sales).\n\nIMPORTANT: If the page content is generic (it describes the marketplace itself, e.g. "an online marketplace for unique goods", rather than a specific product), IGNORE that content and infer the product from the words in the URL path/slug. Example: a path ".../dungeons-dragons-t-shirt-roll-for" means a Dungeons & Dragons themed t-shirt with a "roll for" design. Never return marketplace boilerplate as the product.` }],
     });
     const text = msg.content.filter((b: any) => b.type === "text").map((b: any) => b.text).join("");
     const j = JSON.parse(text.replace(/```json|```/g, "").trim());

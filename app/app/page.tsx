@@ -6,6 +6,7 @@ import { CustomerNav } from "@/lib/CustomerNav";
 
 const PLATFORMS = ["Instagram", "Facebook", "TikTok", "LinkedIn", "Google", "X (Twitter)", "Pinterest", "YouTube"];
 const TONES = ["Bold & punchy", "Premium & polished", "Friendly & casual", "Urgent / scarcity", "Playful & fun", "Professional"];
+const AGE_GROUPS = ["All adults (18+)", "18-24", "25-34", "35-44", "45-54", "55-64", "65+", "Teens (13-17)"];
 
 interface Variation { headline: string; primaryText: string; caption: string; hashtags: string[]; cta: string; }
 interface AdSet { variations: Variation[]; creativeBrief: string; images: string[]; }
@@ -13,7 +14,7 @@ interface AdSet { variations: Variation[]; creativeBrief: string; images: string
 export default function GeneratorPage() {
   const { user, loading, getToken } = useAuth();
   const router = useRouter();
-  const [form, setForm] = useState({ brand: "", product: "", goal: "Drive conversions", platform: "Instagram", tone: "Bold & punchy", audience: "" });
+  const [form, setForm] = useState({ brand: "", product: "", goal: "Drive conversions", platform: "Instagram", tone: "Bold & punchy", audience: "All adults (18+)" });
   const [importUrl, setImportUrl] = useState("");
   const [importing, setImporting] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -51,11 +52,12 @@ export default function GeneratorPage() {
       const r = await fetch("/api/scrape", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${t}` }, body: JSON.stringify({ url: importUrl }) });
       const j = await r.json();
       if (!j.ok) throw new Error(j.error || "Couldn't import that URL");
+      // Auto-fill brand + product + tone + goal from the page. Audience is NOT scraped -
+      // the customer picks a target age group from the dropdown.
       setForm(f => ({
         ...f,
         brand: j.brief.brand || f.brand,
         product: j.brief.product || f.product,
-        audience: j.brief.audience || f.audience,
         tone: j.brief.tone || f.tone,
         goal: j.brief.goal || f.goal,
       }));
@@ -154,7 +156,7 @@ export default function GeneratorPage() {
           </div>
           <div style={{ marginBottom: 12 }}><label style={label}>Brand</label><input className="in" value={form.brand} onChange={e => set("brand", e.target.value)} placeholder="e.g. Lumen Skincare" /></div>
           <div style={{ marginBottom: 12 }}><label style={label}>Product / offer *</label><textarea className="in" rows={3} value={form.product} onChange={e => set("product", e.target.value)} placeholder="What you're advertising - the product, offer, key benefits…" style={{ resize: "vertical" }} /></div>
-          <div style={{ marginBottom: 12 }}><label style={label}>Audience</label><input className="in" value={form.audience} onChange={e => set("audience", e.target.value)} placeholder="e.g. women 25-40 into clean beauty" /></div>
+          <div style={{ marginBottom: 12 }}><label style={label}>Target age group</label><select className="in" value={form.audience} onChange={e => set("audience", e.target.value)}>{AGE_GROUPS.map(a => <option key={a}>{a}</option>)}</select></div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
             <div><label style={label}>Platform</label><select className="in" value={form.platform} onChange={e => set("platform", e.target.value)}>{PLATFORMS.map(p => <option key={p}>{p}</option>)}</select></div>
             <div><label style={label}>Tone</label><select className="in" value={form.tone} onChange={e => set("tone", e.target.value)}>{TONES.map(t => <option key={t}>{t}</option>)}</select></div>
