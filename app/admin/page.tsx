@@ -163,16 +163,18 @@ export default function AdminPage() {
         {/* Main */}
         <div className="admin-main">
           <div className="admin-topbar">
-            <div style={{ fontSize: 18, fontWeight: 900 }}>{title}</div>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              {(view === "leads" || view === "customers") && (
-                <input className="in" value={q} onChange={e => setQ(e.target.value)} placeholder="Search…" style={{ width: 180, padding: "7px 11px", fontSize: 13 }} />
-              )}
-              <button className="btn-ghost btn" disabled={refreshing} onClick={load} style={{ padding: "7px 12px", fontSize: 13 }}>{refreshing ? "…" : "↻ Refresh"}</button>
+            <div style={{ maxWidth: 1180, margin: "0 auto", width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+              <div style={{ fontSize: 18, fontWeight: 900 }}>{title}</div>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {(view === "leads" || view === "customers") && (
+                  <input className="in" value={q} onChange={e => setQ(e.target.value)} placeholder="Search…" style={{ width: 180, padding: "7px 11px", fontSize: 13 }} />
+                )}
+                <button className="btn-ghost btn" disabled={refreshing} onClick={load} style={{ padding: "7px 12px", fontSize: 13 }}>{refreshing ? "…" : "↻ Refresh"}</button>
+              </div>
             </div>
           </div>
 
-          <div style={{ padding: "22px 22px 60px", maxWidth: 1180 }}>
+          <div style={{ padding: "22px 22px 60px", maxWidth: 1180, margin: "0 auto" }}>
             {err && <div style={{ color: "#ff6b6b", marginBottom: 16 }}>{err}</div>}
 
             {/* DASHBOARD */}
